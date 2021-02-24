@@ -20,16 +20,21 @@ export class ReteSocketCollectionModel extends DOMWidgetModel {
   }
 
   async initialize(attributes: any, options: any): Promise<void> {
+    this.socket_instances = new Map<string, Rete.Socket>();
     await super.initialize(attributes, options);
     this.on('change:socket_types', this.socketTypesChanged, this);
     this.socketTypesChanged();
   }
 
   socketTypesChanged(): void {
-    this.socket_types = this.get('socket_types');
-    this.socket_instances = new Map(
-      this.socket_types.map(e => [e, new Rete.Socket(e)])
-    );
+    this.socket_types = [
+      ...new Set([...this.socket_types, ...this.get('socket_types')])
+    ];
+    this.socket_types.forEach(e => {
+      if (this.socket_instances.get(e) === undefined) {
+        this.socket_instances.set(e, new Rete.Socket(e));
+      }
+    });
   }
 
   socket_types: string[];

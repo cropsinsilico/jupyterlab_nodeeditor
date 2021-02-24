@@ -13,6 +13,24 @@ class SocketCollection(ipywidgets.Widget):
     socket_types = traitlets.Tuple().tag(sync=True)
 
 @ipywidgets.register
+class InputSlot(ipywidgets.Widget):
+    _model_name = traitlets.Unicode('InputSlotModel').tag(sync=True)
+    _model_module = traitlets.Unicode('jupyterlab_nodeeditor').tag(sync=True)
+    _model_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
+
+    key = traitlets.Unicode().tag(sync=True)
+    title = traitlets.Unicode().tag(sync=True)
+    socket_type = traitlets.Unicode().tag(sync=True)
+
+@ipywidgets.register
+class Component(ipywidgets.Widget):
+    _model_name = traitlets.Unicode('ReteComponentModel').tag(sync=True)
+    _model_module = traitlets.Unicode('jupyterlab_nodeeditor').tag(sync=True)
+    _model_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
+
+
+
+@ipywidgets.register
 class NodeEditorModel(ipywidgets.DOMWidget):
     _model_name = traitlets.Unicode('ReteEditorModel').tag(sync=True)
     _model_module = traitlets.Unicode('jupyterlab_nodeeditor').tag(sync=True)

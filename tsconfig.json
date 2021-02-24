@@ -10,7 +10,7 @@
     "moduleResolution": "node",
     "noEmitOnError": true,
     "noImplicitAny": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "preserveWatchOutput": true,
     "resolveJsonModule": true,
     "outDir": "lib",
@@ -19,7 +19,7 @@
     "strict": true,
     "strictNullChecks": false,
     "target": "es2017",
-    "types": ["node", "rete-vue-render-plugin"],
+    "types": ["node", "rete-react-render-plugin", "rete-vue-render-plugin", "rete-context-menu-plugin", "resize-observer-browser"],
     "skipLibCheck": true
   },
   "include": ["src/*"],

@@ -6,6 +6,13 @@ from ._version import __version__
 EXTENSION_VERSION = "~" + __version__
 
 @ipywidgets.register
+class SocketCollection(ipywidgets.Widget):
+    _model_name = traitlets.Unicode('ReteSocketCollectionModel').tag(sync=True)
+    _model_module = traitlets.Unicode('jupyterlab_nodeeditor').tag(sync=True)
+    _model_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
+    socket_types = traitlets.Tuple().tag(sync=True)
+
+@ipywidgets.register
 class NodeEditorModel(ipywidgets.DOMWidget):
     _model_name = traitlets.Unicode('ReteEditorModel').tag(sync=True)
     _model_module = traitlets.Unicode('jupyterlab_nodeeditor').tag(sync=True)

@@ -1,20 +1,54 @@
 import * as Rete from 'rete';
+import { NodeData, WorkerInputs, WorkerOutputs } from 'rete/types/core/data';
+import ConnectionPlugin from 'rete-connection-plugin';
+import ContextMenuPlugin from 'rete-context-menu-plugin';
 //import Data from 'rete/types/core/data';
 //import ConnectionPlugin from 'rete-connection-plugin';
-import ReactRenderPlugin from 'rete-vue-render-plugin';
+import VueRenderPlugin from 'rete-react-render-plugin';
 import { DOMWidgetModel, DOMWidgetView, uuid } from '@jupyter-widgets/base';
 import { MODULE_NAME, MODULE_VERSION } from './version';
 
-export class ReteEditorComponents extends DOMWidgetModel {
+export class ReteSocketCollectionModel extends DOMWidgetModel {
   defaults(): any {
     return {
       ...super.defaults(),
-      _model_name: ReteEditorComponents.model_name,
-      _model_module: ReteEditorComponents.model_module,
-      _model_module_version: ReteEditorComponents.model_module_version,
-      _view_name: ReteEditorComponents.view_name,
-      _view_module: ReteEditorComponents.view_module,
-      _view_module_version: ReteEditorComponents.view_module_version
+      _model_name: ReteSocketCollectionModel.model_name,
+      _model_module: ReteSocketCollectionModel.model_module,
+      _model_module_version: ReteSocketCollectionModel.model_module_version,
+      socket_types: ['number', 'string']
+    };
+  }
+
+  async initialize(attributes: any, options: any): Promise<void> {
+    await super.initialize(attributes, options);
+    this.on('change:socket_types', this.socketTypesChanged, this);
+    this.socketTypesChanged();
+  }
+
+  socketTypesChanged(): void {
+    this.socket_types = this.get('socket_types');
+    this.socket_instances = new Map(
+      this.socket_types.map(e => [e, new Rete.Socket(e)])
+    );
+  }
+
+  socket_types: string[];
+  socket_instances: Map<string, Rete.Socket>;
+  static model_name = 'ReteSocketCollectionModel';
+  static model_module = MODULE_NAME;
+  static model_module_version = MODULE_VERSION;
+}
+
+export class ReteEditorModel extends DOMWidgetModel {
+  defaults(): any {
+    return {
+      ...super.defaults(),
+      _model_name: ReteEditorModel.model_name,
+      _model_module: ReteEditorModel.model_module,
+      _model_module_version: ReteEditorModel.model_module_version,
+      _view_name: ReteEditorModel.view_name,
+      _view_module: ReteEditorModel.view_module,
+      _view_module_version: ReteEditorModel.view_module_version
     };
   }
 
@@ -32,21 +66,79 @@ export class ReteEditorComponents extends DOMWidgetModel {
 }
 
 export class ReteEditorView extends DOMWidgetView {
-  async render(): Promise<void> {
+  render(): void {
     this.div = document.createElement('div');
     this.divId = 'rete-editor-' + uuid();
     this.div.setAttribute('id', this.divId);
     this.el.classList.add('retejseditor');
     this.el.appendChild(this.div);
+    //await this.editor.fromJSON(editorData as any);
+    this.engine = new Rete.Engine(`${MODULE_NAME}@${MODULE_VERSION}`);
+    this.engine.register(numComponent);
+    this.displayed.then(() => this.setupEditor());
+  }
+
+  async setupEditor(): Promise<void> {
     this.editor = new Rete.NodeEditor(
       `${MODULE_NAME}@${MODULE_VERSION}`,
       this.div
     );
-    this.editor.use(ReactRenderPlugin);
+    this.editor.use(VueRenderPlugin);
+    this.editor.use(ConnectionPlugin);
+    this.editor.use(ContextMenuPlugin);
+    this.editor.register(numComponent);
     //await this.editor.fromJSON(editorData as any);
+    this.editor.on(
+      [
+        'process',
+        'nodecreated',
+        'noderemoved',
+        'connectioncreated',
+        'connectionremoved'
+      ],
+      async () => {
+        await this.engine.abort();
+        await this.engine.process(this.editor.toJSON());
+      }
+    );
+    this.editor.view.resize();
   }
 
   div: HTMLDivElement;
   divId: string;
   editor: Rete.NodeEditor;
+  engine: Rete.Engine;
 }
+
+const numSocket = new Rete.Socket('Number value');
+
+class NumControl extends Rete.Control {
+  constructor(key: string) {
+    super(key);
+  }
+
+  setValue(val: any): void {
+    this.setValue(val);
+  }
+}
+
+class NumComponent extends Rete.Component {
+  constructor() {
+    super('Number');
+  }
+
+  async builder(node: Rete.Node): Promise<void> {
+    const out = new Rete.Output('num', 'Number', numSocket);
+    node.addOutput(out);
+  }
+
+  async worker(
+    node: NodeData,
+    inputs: WorkerInputs,
+    outputs: WorkerOutputs
+  ): Promise<void> {
+    outputs['num'] = node.data.num;
+  }
+}
+
+const numComponent = new NumComponent();

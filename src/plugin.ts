@@ -1,3 +1,7 @@
+import regeneratorRuntime from 'regenerator-runtime';
+require('regenerator-runtime/runtime');
+(window as any).regeneratorRuntime = regeneratorRuntime;
+
 import { IJupyterWidgetRegistry } from '@jupyter-widgets/base';
 import {
   JupyterFrontEnd,

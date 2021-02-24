@@ -46,19 +46,23 @@
     "watch:labextension": "jupyter labextension watch ."
   },
   "dependencies": {
-    "@babel/polyfill": "^7.2.5",
     "@jupyter-widgets/base": "^4.0.0",
     "@jupyter-widgets/jupyterlab-manager": "^3.0.0",
     "@jupyterlab/application": "^3.0.0",
     "@jupyterlab/coreutils": "^5.0.0",
     "@jupyterlab/services": "^6.0.0",
     "@types/node": "^14.14.31",
+    "@types/resize-observer-browser": "^0.1.5",
+    "regenerator-runtime": "^0.13.7",
     "rete": "^1.4.5-rc.1",
     "rete-connection-plugin": "^0.9.0",
+    "rete-context-menu-plugin": "^0.6.0-rc.1",
+    "rete-react-render-plugin": "^0.2.1",
     "rete-stage0-render-plugin": "^0.2.14"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^3.0.0",
+    "@types/regenerator-runtime": "^0.13.0",
     "@typescript-eslint/eslint-plugin": "^4.8.1",
     "@typescript-eslint/parser": "^4.8.1",
     "eslint": "^7.14.0",
@@ -86,7 +90,7 @@
         }
       }
     },
-    "extension": true,
+    "extension": "lib/plugin",
     "outputDir": "jupyterlab_nodeeditor/labextension"
   }
 }

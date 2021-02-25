@@ -74,7 +74,6 @@ abstract class ReteIOModel extends DOMWidgetModel {
     this.title = this.get('title');
     this.socket_type = this.get('socket_type');
     this.sockets = this.get('sockets');
-    this.instance = this.getInstance();
   }
 
   // Probably a better way to do this with generics, etc, but.
@@ -83,7 +82,6 @@ abstract class ReteIOModel extends DOMWidgetModel {
   key: string;
   title: string;
   socket_type: string;
-  instance: Rete.Input | Rete.Output;
   sockets: ReteSocketCollectionModel;
   static model_name = 'ReteIOModel';
   static model_module = MODULE_NAME;
@@ -111,7 +109,6 @@ export class ReteInputModel extends ReteIOModel {
     );
   }
 
-  instance: Rete.Input;
   static model_name = 'ReteInputModel';
 }
 
@@ -131,7 +128,6 @@ export class ReteOutputModel extends ReteIOModel {
     );
   }
 
-  instance: Rete.Output;
   static model_name = 'ReteOutputModel';
 }
 
@@ -153,23 +149,23 @@ export class ReteComponentModel extends DOMWidgetModel {
     this.title = this.get('title');
     this.inputs = this.get('inputs');
     this.outputs = this.get('outputs');
-    (window as any).comp = this;
+    await this.createComponent();
   }
 
   createComponent(): void {
     const title = this.title;
     const inputs = this.inputs;
     const outputs = this.outputs;
-    this._rete_component = class ThisComponent extends Rete.Component {
+    this._rete_component = new (class ThisComponent extends Rete.Component {
       constructor(_title: string) {
         super(title);
       }
       async builder(node: Rete.Node): Promise<void> {
         inputs.forEach((e: ReteInputModel) => {
-          node.addInput(e.instance);
+          node.addInput(e.getInstance());
         });
         outputs.forEach((e: ReteOutputModel) => {
-          node.addOutput(e.instance);
+          node.addOutput(e.getInstance());
         });
       }
       worker(
@@ -180,7 +176,7 @@ export class ReteComponentModel extends DOMWidgetModel {
       ): void {
         return;
       }
-    };
+    })('');
   }
 
   static serializers: ISerializers = {
@@ -191,7 +187,7 @@ export class ReteComponentModel extends DOMWidgetModel {
   };
 
   // the inputs and outputs will need serializers and deserializers
-  _rete_component: typeof Rete.Component;
+  _rete_component: Rete.Component;
   sockets: ReteSocketCollectionModel;
   title: string;
   inputs: ReteInputModel[];
@@ -205,6 +201,7 @@ export class ReteEditorModel extends DOMWidgetModel {
   defaults(): any {
     return {
       ...super.defaults(),
+      _components: [],
       _model_name: ReteEditorModel.model_name,
       _model_module: ReteEditorModel.model_module,
       _model_module_version: ReteEditorModel.model_module_version,
@@ -217,8 +214,29 @@ export class ReteEditorModel extends DOMWidgetModel {
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   async initialize(attributes: any, options: any): Promise<void> {
     super.initialize(attributes, options);
+    this.engine = new Rete.Engine(`${MODULE_NAME}@${MODULE_VERSION}`);
+    this.on('change:_components', this.addNewComponent, this);
+    this.addNewComponent();
   }
 
+  addNewComponent(): void {
+    this._components = this.get('_components');
+    console.log('editor components', this._components);
+    this._components.forEach(v => {
+      if (this.engine.components.get(v.title) === undefined) {
+        console.log('Registering in engine: ', v.title);
+        this.engine.register(v._rete_component);
+      }
+    });
+  }
+
+  static serializers: ISerializers = {
+    ...DOMWidgetModel.serializers,
+    _components: { deserialize: unpack_models }
+  };
+
+  _components: ReteComponentModel[];
+  engine: Rete.Engine;
   static model_name = 'ReteEditorModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
@@ -235,9 +253,24 @@ export class ReteEditorView extends DOMWidgetView {
     this.el.classList.add('retejseditor');
     this.el.appendChild(this.div);
     //await this.editor.fromJSON(editorData as any);
-    this.engine = new Rete.Engine(`${MODULE_NAME}@${MODULE_VERSION}`);
-    this.engine.register(numComponent);
+    this.setupListeners();
     this.displayed.then(() => this.setupEditor());
+  }
+
+  setupListeners(): void {
+    this.model.on('change:_components', this.addNewComponent, this);
+  }
+
+  addNewComponent(): void {
+    const components: ReteComponentModel[] = this.model.get('_components');
+    console.log(components);
+    components.forEach(v => {
+      if (this.editor.components.get(v.title) === undefined) {
+        console.log('Registering in editor: ', v.title);
+        console.log(v._rete_component);
+        this.editor.register(v._rete_component);
+      }
+    });
   }
 
   async setupEditor(): Promise<void> {
@@ -259,13 +292,15 @@ export class ReteEditorView extends DOMWidgetView {
         'connectionremoved'
       ],
       async () => {
-        await this.engine.abort();
-        await this.engine.process(this.editor.toJSON());
+        await this.model.engine.abort();
+        await this.model.engine.process(this.editor.toJSON());
       }
     );
     this.editor.view.resize();
+    this.addNewComponent();
   }
 
+  model: ReteEditorModel;
   div: HTMLDivElement;
   divId: string;
   editor: Rete.NodeEditor;

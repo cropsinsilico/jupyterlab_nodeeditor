@@ -57,3 +57,8 @@ class NodeEditorModel(ipywidgets.DOMWidget):
     _view_name = traitlets.Unicode('ReteEditorView').tag(sync=True)
     _view_module = traitlets.Unicode('jupyterlab_nodeeditor').tag(sync=True)
     _view_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
+    _components = traitlets.List(traitlets.Instance(Component)).tag(
+        sync=True, **ipywidgets.widget_serialization)
+
+    def add_component(self, component):
+        self._components = self._components + [component]

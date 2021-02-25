@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import * as Rete from 'rete';
 import { NodeData, WorkerInputs, WorkerOutputs } from 'rete/types/core/data';
 import ConnectionPlugin from 'rete-connection-plugin';
@@ -5,7 +6,13 @@ import ContextMenuPlugin from 'rete-context-menu-plugin';
 //import Data from 'rete/types/core/data';
 //import ConnectionPlugin from 'rete-connection-plugin';
 import VueRenderPlugin from 'rete-react-render-plugin';
-import { DOMWidgetModel, DOMWidgetView, uuid } from '@jupyter-widgets/base';
+import {
+  DOMWidgetModel,
+  DOMWidgetView,
+  uuid,
+  unpack_models,
+  ISerializers
+} from '@jupyter-widgets/base';
 import { MODULE_NAME, MODULE_VERSION } from './version';
 
 export class ReteSocketCollectionModel extends DOMWidgetModel {
@@ -48,22 +55,91 @@ export class ReteSocketCollectionModel extends DOMWidgetModel {
   static model_module_version = MODULE_VERSION;
 }
 
-export interface IReteInput {
+abstract class ReteIOModel extends DOMWidgetModel {
+  defaults(): any {
+    return {
+      ...super.defaults(),
+      key: undefined,
+      title: undefined,
+      socket_type: undefined,
+      _model_name: ReteIOModel.model_name,
+      _model_module: ReteIOModel.model_module,
+      _model_module_version: ReteIOModel.model_module_version
+    };
+  }
+
+  async initialize(attributes: any, options: any): Promise<void> {
+    super.initialize(attributes, options);
+    this.key = this.get('key');
+    this.title = this.get('title');
+    this.socket_type = this.get('socket_type');
+    this.sockets = this.get('sockets');
+    this.instance = this.getInstance();
+  }
+
+  // Probably a better way to do this with generics, etc, but.
+  public abstract getInstance(): Rete.Input | Rete.Output;
+
   key: string;
   title: string;
   socket_type: string;
+  instance: Rete.Input | Rete.Output;
+  sockets: ReteSocketCollectionModel;
+  static model_name = 'ReteIOModel';
+  static model_module = MODULE_NAME;
+  static model_module_version = MODULE_VERSION;
+
+  static serializers: ISerializers = {
+    ...DOMWidgetModel.serializers,
+    sockets: { deserialize: unpack_models }
+  };
 }
 
-export interface IReteOutput {
-  key: string;
-  title: string;
-  socket_type: string;
+export class ReteInputModel extends ReteIOModel {
+  defaults(): any {
+    return {
+      ...super.defaults(),
+      _model_name: ReteInputModel.model_name
+    };
+  }
+
+  getInstance(): Rete.Input {
+    return new Rete.Input(
+      this.key,
+      this.title,
+      this.sockets.getSocket(this.socket_type)
+    );
+  }
+
+  instance: Rete.Input;
+  static model_name = 'ReteInputModel';
+}
+
+export class ReteOutputModel extends ReteIOModel {
+  defaults(): any {
+    return {
+      ...super.defaults(),
+      _model_name: ReteOutputModel.model_name
+    };
+  }
+
+  getInstance(): Rete.Output {
+    return new Rete.Output(
+      this.key,
+      this.title,
+      this.sockets.getSocket(this.socket_type)
+    );
+  }
+
+  instance: Rete.Output;
+  static model_name = 'ReteOutputModel';
 }
 
 export class ReteComponentModel extends DOMWidgetModel {
   defaults(): any {
     return {
       ...super.defaults(),
+      sockets: undefined,
       _model_name: ReteComponentModel.model_name,
       _model_module: ReteComponentModel.model_module,
       _model_module_version: ReteComponentModel.model_module_version
@@ -84,21 +160,16 @@ export class ReteComponentModel extends DOMWidgetModel {
     const title = this.title;
     const inputs = this.inputs;
     const outputs = this.outputs;
-    const sockets = this.sockets;
     this._rete_component = class ThisComponent extends Rete.Component {
       constructor(_title: string) {
         super(title);
       }
       async builder(node: Rete.Node): Promise<void> {
-        inputs.forEach((e: IReteInput) => {
-          node.addInput(
-            new Rete.Input(e.key, e.title, sockets.getSocket(e.socket_type))
-          );
+        inputs.forEach((e: ReteInputModel) => {
+          node.addInput(e.instance);
         });
-        outputs.forEach((e: IReteOutput) => {
-          node.addOutput(
-            new Rete.Output(e.key, e.title, sockets.getSocket(e.socket_type))
-          );
+        outputs.forEach((e: ReteOutputModel) => {
+          node.addOutput(e.instance);
         });
       }
       worker(
@@ -112,12 +183,19 @@ export class ReteComponentModel extends DOMWidgetModel {
     };
   }
 
+  static serializers: ISerializers = {
+    ...DOMWidgetModel.serializers,
+    sockets: { deserialize: unpack_models },
+    inputs: { deserialize: unpack_models },
+    outputs: { deserialize: unpack_models }
+  };
+
   // the inputs and outputs will need serializers and deserializers
   _rete_component: typeof Rete.Component;
   sockets: ReteSocketCollectionModel;
   title: string;
-  inputs: IReteInput[];
-  outputs: IReteOutput[];
+  inputs: ReteInputModel[];
+  outputs: ReteOutputModel[];
   static model_name = 'ReteComponentModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;

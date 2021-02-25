@@ -44,6 +44,47 @@ export class ReteSocketCollectionModel extends DOMWidgetModel {
   static model_module_version = MODULE_VERSION;
 }
 
+export interface IReteInput {
+  key: string;
+  title: string;
+  socket_type: string;
+}
+
+export interface IReteOutput {
+  key: string;
+  title: string;
+  socket_type: string;
+}
+
+export class ReteComponentModel extends DOMWidgetModel {
+  defaults(): any {
+    return {
+      ...super.defaults(),
+      _model_name: ReteComponentModel.model_name,
+      _model_module: ReteComponentModel.model_module,
+      _model_module_version: ReteComponentModel.model_module_version
+    };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  async initialize(attributes: any, options: any): Promise<void> {
+    super.initialize(attributes, options);
+  }
+
+  createComponent() {
+
+  }
+
+  // the inputs and outputs will need serializers and deserializers
+  _rete_component: typeof Rete.Component;
+  title: string;
+  inputs: IReteInput[];
+  outputs: IReteOutput[];
+  static model_name = 'ReteComponentModel';
+  static model_module = MODULE_NAME;
+  static model_module_version = MODULE_VERSION;
+}
+
 export class ReteEditorModel extends DOMWidgetModel {
   defaults(): any {
     return {
@@ -57,7 +98,7 @@ export class ReteEditorModel extends DOMWidgetModel {
     };
   }
 
-  // eslinct-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   async initialize(attributes: any, options: any): Promise<void> {
     super.initialize(attributes, options);
   }

@@ -38,4 +38,4 @@ def _load_jupyter_server_extension(server_app):
     server_app.log.info("Registered HelloWorld extension at URL path /jupyterlab_nodeeditor")
 
 
-from .node_editor import NodeEditorModel, SocketCollection
+from .node_editor import NodeEditorModel, SocketCollection, InputSlot, OutputSlot, Component

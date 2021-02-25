@@ -27,6 +27,7 @@ export class ReteSocketCollectionModel extends DOMWidgetModel {
   }
 
   socketTypesChanged(): void {
+    this.socket_types = this.get('socket_types');
     this.socket_types = [
       ...new Set([...this.socket_types, ...this.get('socket_types')])
     ];
@@ -72,6 +73,11 @@ export class ReteComponentModel extends DOMWidgetModel {
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   async initialize(attributes: any, options: any): Promise<void> {
     super.initialize(attributes, options);
+    this.sockets = this.get('sockets');
+    this.title = this.get('title');
+    this.inputs = this.get('inputs');
+    this.outputs = this.get('outputs');
+    (window as any).comp = this;
   }
 
   createComponent(): void {

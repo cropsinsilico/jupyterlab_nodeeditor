@@ -30,11 +30,14 @@ export class ReteSocketCollectionModel extends DOMWidgetModel {
     this.socket_types = [
       ...new Set([...this.socket_types, ...this.get('socket_types')])
     ];
-    this.socket_types.forEach(e => {
-      if (this.socket_instances.get(e) === undefined) {
-        this.socket_instances.set(e, new Rete.Socket(e));
-      }
-    });
+    this.socket_types.forEach(e => this.getSocket(e));
+  }
+
+  getSocket(socketName: string): Rete.Socket {
+    if (this.socket_instances.get(socketName) === undefined) {
+      this.socket_instances.set(socketName, new Rete.Socket(socketName));
+    }
+    return this.socket_instances.get(socketName);
   }
 
   socket_types: string[];
@@ -71,12 +74,41 @@ export class ReteComponentModel extends DOMWidgetModel {
     super.initialize(attributes, options);
   }
 
-  createComponent() {
-
+  createComponent(): void {
+    const title = this.title;
+    const inputs = this.inputs;
+    const outputs = this.outputs;
+    const sockets = this.sockets;
+    this._rete_component = class ThisComponent extends Rete.Component {
+      constructor(_title: string) {
+        super(title);
+      }
+      async builder(node: Rete.Node): Promise<void> {
+        inputs.forEach((e: IReteInput) => {
+          node.addInput(
+            new Rete.Input(e.key, e.title, sockets.getSocket(e.socket_type))
+          );
+        });
+        outputs.forEach((e: IReteOutput) => {
+          node.addOutput(
+            new Rete.Output(e.key, e.title, sockets.getSocket(e.socket_type))
+          );
+        });
+      }
+      worker(
+        node: NodeData,
+        inputs: WorkerInputs,
+        outputs: WorkerOutputs,
+        ...args: unknown[]
+      ): void {
+        return;
+      }
+    };
   }
 
   // the inputs and outputs will need serializers and deserializers
   _rete_component: typeof Rete.Component;
+  sockets: ReteSocketCollectionModel;
   title: string;
   inputs: IReteInput[];
   outputs: IReteOutput[];

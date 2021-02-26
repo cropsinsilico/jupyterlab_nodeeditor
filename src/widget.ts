@@ -3,8 +3,6 @@ import * as Rete from 'rete';
 import { NodeData, WorkerInputs, WorkerOutputs } from 'rete/types/core/data';
 import ConnectionPlugin from 'rete-connection-plugin';
 import ContextMenuPlugin from 'rete-context-menu-plugin';
-//import Data from 'rete/types/core/data';
-//import ConnectionPlugin from 'rete-connection-plugin';
 import VueRenderPlugin from 'rete-react-render-plugin';
 import {
   DOMWidgetModel,
@@ -308,16 +306,6 @@ export class ReteEditorView extends DOMWidgetView {
 }
 
 const numSocket = new Rete.Socket('Number value');
-
-class NumControl extends Rete.Control {
-  constructor(key: string) {
-    super(key);
-  }
-
-  setValue(val: any): void {
-    this.setValue(val);
-  }
-}
 
 class NumComponent extends Rete.Component {
   constructor() {

@@ -5,8 +5,9 @@ from pathlib import Path
 from ._version import __version__
 
 HERE = Path(__file__).parent.resolve()
+fn = (HERE / "labextesnion" / "package.json")
 
-with (HERE / "labextension" / "package.json").open() as fid:
+with fn.open() as fid:
     data = json.load(fid)
 
 def _jupyter_labextension_paths():

@@ -1,30 +1,24 @@
-
 import json
 from pathlib import Path
 
 from ._version import __version__
 
 HERE = Path(__file__).parent.resolve()
-fn = (HERE / "labextesnion" / "package.json")
+fn = HERE / "labextension" / "package.json"
 
 with fn.open() as fid:
     data = json.load(fid)
 
-def _jupyter_labextension_paths():
-    return [{
-        "src": "labextension",
-        "dest": data["name"]
-    }]
 
+def _jupyter_labextension_paths():
+    return [{"src": "labextension", "dest": data["name"]}]
 
 
 from .handlers import setup_handlers
 
 
 def _jupyter_server_extension_points():
-    return [{
-        "module": "jupyterlab_nodeeditor"
-    }]
+    return [{"module": "jupyterlab_nodeeditor"}]
 
 
 def _load_jupyter_server_extension(server_app):
@@ -36,7 +30,15 @@ def _load_jupyter_server_extension(server_app):
         JupyterLab application instance
     """
     setup_handlers(server_app.web_app)
-    server_app.log.info("Registered HelloWorld extension at URL path /jupyterlab_nodeeditor")
+    server_app.log.info(
+        "Registered HelloWorld extension at URL path /jupyterlab_nodeeditor"
+    )
 
 
-from .node_editor import NodeEditorModel, SocketCollection, InputSlot, OutputSlot, Component
+from .node_editor import (
+    NodeEditorModel,
+    SocketCollection,
+    InputSlot,
+    OutputSlot,
+    Component,
+)

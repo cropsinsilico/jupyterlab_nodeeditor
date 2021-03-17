@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import * as Rete from 'rete';
-import { NodeData, WorkerInputs, WorkerOutputs } from 'rete/types/core/data';
+import {
+  NodeData,
+  WorkerInputs,
+  WorkerOutputs,
+  Data
+} from 'rete/types/core/data';
 import ConnectionPlugin from 'rete-connection-plugin';
 import ContextMenuPlugin from 'rete-context-menu-plugin';
 import VueRenderPlugin from 'rete-react-render-plugin';
@@ -199,6 +204,7 @@ export class ReteEditorModel extends DOMWidgetModel {
   defaults(): any {
     return {
       ...super.defaults(),
+      editorConfig: {},
       _components: [],
       _model_name: ReteEditorModel.model_name,
       _model_module: ReteEditorModel.model_module,
@@ -214,7 +220,34 @@ export class ReteEditorModel extends DOMWidgetModel {
     super.initialize(attributes, options);
     this.engine = new Rete.Engine(`${MODULE_NAME}@${MODULE_VERSION}`);
     this.on('change:_components', this.addNewComponent, this);
+    this.on('msg:custom', this.onCommand.bind(this));
     this.addNewComponent();
+  }
+
+  private async onCommand(command: any, buffers: any) {
+    let newConfig: Data;
+    const myConfig: { [key: string]: any } = {};
+    switch (command.name) {
+      case 'setConfig':
+        newConfig = command.args[0] as Data;
+        for (const viewId of Object.keys(this.views)) {
+          this.views[viewId].then(v =>
+            (v as ReteEditorView).editor.fromJSON(newConfig)
+          );
+        }
+        break;
+      case 'getConfig':
+        for await (const viewId of Object.keys(this.views)) {
+          const view = await this.views[viewId];
+          myConfig[viewId] = (view as ReteEditorView).editor.toJSON() as any;
+        }
+        this.editorConfig = myConfig;
+        this.set('editorConfig', this.editorConfig);
+        this.save();
+        break;
+      default:
+        break;
+    }
   }
 
   addNewComponent(): void {
@@ -235,6 +268,7 @@ export class ReteEditorModel extends DOMWidgetModel {
 
   _components: ReteComponentModel[];
   engine: Rete.Engine;
+  editorConfig: { [key: string]: any };
   static model_name = 'ReteEditorModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
@@ -264,8 +298,6 @@ export class ReteEditorView extends DOMWidgetView {
     console.log(components);
     components.forEach(v => {
       if (this.editor.components.get(v.title) === undefined) {
-        console.log('Registering in editor: ', v.title);
-        console.log(v._rete_component);
         this.editor.register(v._rete_component);
       }
     });

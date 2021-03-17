@@ -1,5 +1,6 @@
 import ipywidgets
 import traitlets
+import json
 
 from ._version import __version__
 
@@ -70,6 +71,15 @@ class NodeEditorModel(ipywidgets.DOMWidget):
     _components = traitlets.List(traitlets.Instance(Component)).tag(
         sync=True, **ipywidgets.widget_serialization
     )
+    editorConfig = traitlets.Dict().tag(sync=True)
 
     def add_component(self, component):
         self._components = self._components + [component]
+
+    def send_config(self, config):
+        if isinstance(config, str):
+            config = json.loads(config)
+        self.send({"name": "setConfig", "args": [config]})
+
+    def sync_config(self):
+        self.send({"name": "getConfig", "args": []})

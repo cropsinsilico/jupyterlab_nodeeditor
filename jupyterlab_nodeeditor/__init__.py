@@ -41,4 +41,5 @@ from .node_editor import (
     InputSlot,
     OutputSlot,
     Component,
+    NodeEditor,
 )

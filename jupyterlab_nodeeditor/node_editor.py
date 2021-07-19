@@ -1,6 +1,7 @@
+import json
+
 import ipywidgets
 import traitlets
-import json
 
 from ._version import __version__
 

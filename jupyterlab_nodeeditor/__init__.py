@@ -36,9 +36,9 @@ def _load_jupyter_server_extension(server_app):
 
 
 from .node_editor import (
-    NodeEditorModel,
-    SocketCollection,
-    InputSlot,
-    OutputSlot,
     Component,
+    InputSlot,
+    NodeEditorModel,
+    OutputSlot,
+    SocketCollection,
 )

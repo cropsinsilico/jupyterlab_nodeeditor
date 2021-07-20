@@ -156,6 +156,7 @@ export class ReteComponentModel extends DOMWidgetModel {
   }
 
   createComponent(): void {
+    const thisId = this.model_id;
     const title = this.title;
     const inputs = this.inputs;
     const outputs = this.outputs;
@@ -164,6 +165,7 @@ export class ReteComponentModel extends DOMWidgetModel {
         super(title);
       }
       async builder(node: Rete.Node): Promise<void> {
+        node.meta.componentId = thisId;
         inputs.forEach((e: ReteInputModel) => {
           node.addInput(e.getInstance());
         });
@@ -179,6 +181,7 @@ export class ReteComponentModel extends DOMWidgetModel {
       ): void {
         return;
       }
+      componentId: string;
     })('');
   }
 
@@ -326,6 +329,9 @@ export class ReteEditorView extends DOMWidgetView {
         await this.model.engine.process(this.editor.toJSON());
       }
     );
+    this.editor.on(['nodeselected'], async (node: Rete.Node) => {
+      console.log('Selected node', node);
+    });
     this.editor.view.resize();
     this.addNewComponent();
   }

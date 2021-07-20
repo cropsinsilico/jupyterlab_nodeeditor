@@ -2,7 +2,6 @@ import json
 
 import ipywidgets
 import traitlets
-import json
 from IPython.display import display
 
 from ._version import __version__
@@ -73,6 +72,7 @@ class OutputSlotTrait(traitlets.TraitType):
         new_obj = OutputSlot(**value)
         return new_obj
 
+
 @ipywidgets.register
 class Component(ipywidgets.Widget):
     _model_name = traitlets.Unicode("ReteComponentModel").tag(sync=True)
@@ -83,10 +83,12 @@ class Component(ipywidgets.Widget):
         sync=True, **ipywidgets.widget_serialization
     )
     inputs = traitlets.List(InputSlotTrait()).tag(
-                sync=True, **ipywidgets.widget_serialization)
+        sync=True, **ipywidgets.widget_serialization
+    )
     outputs = traitlets.List(OutputSlotTrait()).tag(
         sync=True, **ipywidgets.widget_serialization
     )
+
 
 @ipywidgets.register
 class NodeEditorModel(ipywidgets.DOMWidget):
@@ -112,6 +114,7 @@ class NodeEditorModel(ipywidgets.DOMWidget):
     def sync_config(self):
         self.send({"name": "getConfig", "args": []})
 
+
 class NodeEditor(traitlets.HasTraits):
     node_editor = traitlets.Instance(NodeEditorModel)
     socket_collection = traitlets.Instance(SocketCollection)
@@ -119,14 +122,14 @@ class NodeEditor(traitlets.HasTraits):
 
     def add_component(self, component):
         if isinstance(component, dict):
-            new_component = {'sockets': self.socket_collection}
+            new_component = {"sockets": self.socket_collection}
             new_component.update(component)
             component = Component(**new_component)
         self.node_editor.add_component(component)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        traitlets.link((self, 'socket_types'), (self.socket_collection, 'socket_types'))
+        traitlets.link((self, "socket_types"), (self.socket_collection, "socket_types"))
 
     @traitlets.default("node_editor")
     def _default_node_editor(self):

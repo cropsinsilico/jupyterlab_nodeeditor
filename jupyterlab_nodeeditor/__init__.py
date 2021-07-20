@@ -36,10 +36,11 @@ def _load_jupyter_server_extension(server_app):
 
 
 from .node_editor import (
-    NodeEditorModel,
-    SocketCollection,
+    Component,
     InputSlot,
+    NodeEditorModel,
     OutputSlot,
     Component,
     NodeEditor,
+    SocketCollection,
 )

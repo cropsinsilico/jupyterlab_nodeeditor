@@ -79,6 +79,9 @@ class Component(ipywidgets.Widget):
     _model_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
     _model_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
     title = traitlets.Unicode("Title").tag(sync=True)
+    # We distinguish between name and title because one is displayed on all
+    # instances and the other is the name of the component type
+    type_name = traitlets.Unicode().tag(sync=True)
     sockets = traitlets.Instance(SocketCollection).tag(
         sync=True, **ipywidgets.widget_serialization
     )
@@ -88,6 +91,23 @@ class Component(ipywidgets.Widget):
     outputs = traitlets.List(OutputSlotTrait()).tag(
         sync=True, **ipywidgets.widget_serialization
     )
+
+    @traitlets.default("type_name")
+    def _default_type_name(self):
+        # slugize the title
+        name = "component_" + self.title.replace(" ", "_").lower()
+        return name
+
+
+@ipywidgets.register
+class NodeInstanceModel(ipywidgets.Widget):
+    _model_name = traitlets.Unicode("ReteNodeModel").tag(sync=True)
+    _model_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
+    _model_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
+    title = traitlets.Unicode("Title").tag(sync=True)
+    # We distinguish between name and title because one is displayed on all
+    # instances and the other is the name of the component type
+    type_name = traitlets.Unicode().tag(sync=True)
 
 
 @ipywidgets.register
@@ -102,6 +122,10 @@ class NodeEditorModel(ipywidgets.DOMWidget):
         sync=True, **ipywidgets.widget_serialization
     )
     editorConfig = traitlets.Dict().tag(sync=True)
+    selected_component_type = traitlets.Unicode(allow_none=True).tag(sync=True)
+    nodes = traitlets.List(traitlets.Instance(NodeInstanceModel), default_value=[]).tag(
+        sync=True, **ipywidgets.widget_serialization
+    )
 
     def add_component(self, component):
         self._components = self._components + [component]

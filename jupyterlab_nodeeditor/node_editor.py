@@ -104,6 +104,9 @@ class NodeInstanceModel(ipywidgets.Widget):
     _model_name = traitlets.Unicode("ReteNodeModel").tag(sync=True)
     _model_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
     _model_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
+    _view_name = traitlets.Unicode("ReteNodeView").tag(sync=True)
+    _view_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
+    _view_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
     title = traitlets.Unicode("Title").tag(sync=True)
     # We distinguish between name and title because one is displayed on all
     # instances and the other is the name of the component type

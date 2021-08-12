@@ -110,7 +110,7 @@ class NodeInstanceModel(ipywidgets.Widget):
     title = traitlets.Unicode("Title").tag(sync=True)
     # We distinguish between name and title because one is displayed on all
     # instances and the other is the name of the component type
-    type_name = traitlets.Unicode().tag(sync=True)
+    type_name = traitlets.Unicode("DefaultComponent", allow_none=False).tag(sync=True)
     inputs = traitlets.List(InputSlotTrait()).tag(
         sync=True, **ipywidgets.widget_serialization
     )
@@ -131,7 +131,9 @@ class NodeEditorModel(ipywidgets.DOMWidget):
         sync=True, **ipywidgets.widget_serialization
     )
     editorConfig = traitlets.Dict().tag(sync=True)
-    selected_component_type = traitlets.Unicode(allow_none=True).tag(sync=True)
+    selected_node = traitlets.Instance(NodeInstanceModel, allow_none=True).tag(
+        sync=True, **ipywidgets.widget_serialization
+    )
     nodes = traitlets.List(traitlets.Instance(NodeInstanceModel), default_value=[]).tag(
         sync=True, **ipywidgets.widget_serialization
     )

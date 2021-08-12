@@ -111,6 +111,12 @@ class NodeInstanceModel(ipywidgets.Widget):
     # We distinguish between name and title because one is displayed on all
     # instances and the other is the name of the component type
     type_name = traitlets.Unicode().tag(sync=True)
+    inputs = traitlets.List(InputSlotTrait()).tag(
+        sync=True, **ipywidgets.widget_serialization
+    )
+    outputs = traitlets.List(OutputSlotTrait()).tag(
+        sync=True, **ipywidgets.widget_serialization
+    )
 
 
 @ipywidgets.register

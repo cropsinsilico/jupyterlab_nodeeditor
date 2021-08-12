@@ -11,7 +11,6 @@ import ContextMenuPlugin from 'rete-context-menu-plugin';
 import VueRenderPlugin from 'rete-react-render-plugin';
 import {
   DOMWidgetModel,
-  WidgetModel,
   DOMWidgetView,
   uuid,
   unpack_models,
@@ -213,6 +212,8 @@ export class ReteNodeModel extends DOMWidgetModel {
       ...super.defaults(),
       title: 'Empty Title',
       type_name: 'node_type_empty',
+      inputs: [],
+      outputs: [],
       _model_name: ReteNodeModel.model_name,
       _model_module: ReteNodeModel.model_module,
       _model_module_version: ReteNodeModel.model_module_version,
@@ -226,16 +227,52 @@ export class ReteNodeModel extends DOMWidgetModel {
   async initialize(attributes: any, options: any): Promise<void> {
     super.initialize(attributes, options);
     this.on('change:title', this.changeTitle, this);
+    this.on('change:inputs', this.changeInputs, this);
+    this.on('change:outputs', this.changeOutputs, this);
   }
 
   changeTitle(): void {
     this._node.name = this.get('title');
   }
 
+  changeInputs(model: ReteNodeModel, newInputs: ReteInputModel[]): void {
+    const oldInputs: ReteInputModel[] = this.previous('inputs');
+    for (const remEl of oldInputs.filter(_ => !newInputs.includes(_))) {
+      // These are instances, so we match based on keys
+      this._node.removeInput(this._node.inputs.get(remEl.key));
+      console.log('Removing ', remEl.name, this._node.inputs.get(remEl.key));
+    }
+    for (const newEl of newInputs.filter(_ => !oldInputs.includes(_))) {
+      this._node.addInput(newEl.getInstance());
+      console.log('Adding', newEl.name);
+    }
+  }
+
+  changeOutputs(model: ReteNodeModel, newOutputs: ReteOutputModel[]): void {
+    const oldOutputs: ReteOutputModel[] = this.previous('outputs');
+    for (const remEl of oldOutputs.filter(_ => !newOutputs.includes(_))) {
+      // These are instances, so we match based on keys
+      this._node.removeOutput(this._node.outputs.get(remEl.key));
+      console.log('Removing ', remEl.name);
+    }
+    for (const newEl of newOutputs.filter(_ => !oldOutputs.includes(_))) {
+      this._node.addOutput(newEl.getInstance());
+      console.log('Adding', newEl.name);
+    }
+  }
+
+  static serializers: ISerializers = {
+    ...DOMWidgetModel.serializers,
+    inputs: { deserialize: unpack_models },
+    outputs: { deserialize: unpack_models }
+  };
+
   // the inputs and outputs will need serializers and deserializers
   title: string;
   type_name: string;
   _node: Rete.Node;
+  inputs: ReteInputModel[];
+  outputs: ReteOutputModel[];
   static model_name = 'ReteNodeModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;

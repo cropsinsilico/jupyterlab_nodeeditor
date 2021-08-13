@@ -39,8 +39,7 @@
     "clean:all": "jlpm run clean:lib && jlpm run clean:labextension",
     "eslint": "eslint . --ext .ts,.tsx --fix",
     "eslint:check": "eslint . --ext .ts,.tsx",
-    "install:extension": "jupyter labextension develop --overwrite .",
-    "prepare": "jlpm run clean && jlpm run build:prod",
+    "install:extension": "jlpm run build",
     "watch": "run-p watch:src watch:labextension",
     "watch:src": "tsc -w",
     "watch:labextension": "jupyter labextension watch ."
@@ -48,9 +47,9 @@
   "dependencies": {
     "@jupyter-widgets/base": "^4.0.0",
     "@jupyter-widgets/jupyterlab-manager": "^3.0.0",
-    "@jupyterlab/application": "^3.0.0",
-    "@jupyterlab/coreutils": "^5.0.0",
-    "@jupyterlab/services": "^6.0.0",
+    "@jupyterlab/application": "^3.1.0",
+    "@jupyterlab/coreutils": "^5.1.0",
+    "@jupyterlab/services": "^6.1.0",
     "@types/node": "^14.14.31",
     "@types/resize-observer-browser": "^0.1.5",
     "regenerator-runtime": "^0.13.7",
@@ -61,7 +60,7 @@
     "rete-stage0-render-plugin": "^0.2.14"
   },
   "devDependencies": {
-    "@jupyterlab/builder": "^3.0.0",
+    "@jupyterlab/builder": "^3.1.0",
     "@types/regenerator-runtime": "^0.13.0",
     "@typescript-eslint/eslint-plugin": "^4.8.1",
     "@typescript-eslint/parser": "^4.8.1",

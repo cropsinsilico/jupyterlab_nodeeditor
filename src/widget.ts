@@ -490,13 +490,19 @@ class DefaultComponent extends Rete.Component {
     super('DefaultComponent');
   }
 
-  async builder(node: Rete.Node): Promise<void> { }
+  async builder(node: Rete.Node): Promise<void> {
+    // Nominally, this is where we would build things, but we don't need to at
+    // this point.
+  }
 
   async worker(
     node: NodeData,
     inputs: WorkerInputs,
     outputs: WorkerOutputs
-  ): Promise<void> { }
+  ): Promise<void> {
+    // Because we don't have any inputs or outputs by default,
+    // this too will be empty.
+  }
 }
 
 const defaultComponent = new DefaultComponent();

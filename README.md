@@ -1,4 +1,5 @@
 # jupyterlab_nodeeditor
+## ReadME Updated as of October 11th, 2021
 
 ![Github Actions Status](https://github.com/matthewturk/jupyterlab_nodeeditor/workflows/Build/badge.svg)
 
@@ -42,19 +43,35 @@ jupyter labextension list
 
 ### Development install
 
-Note: You will need NodeJS to build the extension package.
+It is recommended to first install JLNE and all of its dependencies on a fresh environment to ensure it is stable.
+
+1) Start by installing ![jupyterlab](https://jupyter.org/install) and all of its dependencies.
+2) Install ipykernel
+```
+python -m ipykernel install --name conda_env --user
+```
+3) Clone the repo to your local environment and change the working directory to the jupyterlab_nodeeditor directory.
+4) Install the package via pip and copy package.json over
+```
+pip install -e .
+cat jupyterlab_nodeeditor/labextension/package.json
+```
+5) Install ![NodeJS](https://nodejs.org/en/download/package-manager/)
+6) Install jlpm and yaml
+```
+jlpm install
+pip install pyyaml
+```
+7) Link your development version of the extension with JupyterLab
+```
+jupyter labextension develop . --overwrite
+```
 
 The `jlpm` command is JupyterLab's pinned version of
 [yarn](https://yarnpkg.com/) that is installed with JupyterLab. You may use
 `yarn` or `npm` in lieu of `jlpm` below.
 
 ```bash
-# Clone the repo to your local environment
-# Change directory to the jupyterlab_nodeeditor directory
-# Install package in development mode
-pip install -e .
-# Link your development version of the extension with JupyterLab
-jupyter labextension develop . --overwrite
 # Rebuild extension Typescript source after making changes
 jlpm run build
 ```

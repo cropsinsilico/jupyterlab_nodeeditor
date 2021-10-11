@@ -47,9 +47,9 @@ It is recommended to first install JLNE and all of its dependencies on a fresh e
 1) Install ![jupyterlab](https://jupyter.org/install), ipykernel (conda_env is your current environment name), ![NodeJS](https://nodejs.org/en/download/package-manager/), and pyyaml.
 ```
 conda install jupyterlab
-python -m ipykernel install --name conda_env --user
 conda install nodejs
 pip install pyyaml
+python -m ipykernel install --name conda_env --user
 ```
 2) Clone the repo to your local environment and change the working directory to the jupyterlab_nodeeditor directory.
 3) Install the package via pip

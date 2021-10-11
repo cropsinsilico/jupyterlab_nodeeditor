@@ -1,5 +1,4 @@
 # jupyterlab_nodeeditor
-## ReadME Updated as of October 11th, 2021
 
 ![Github Actions Status](https://github.com/matthewturk/jupyterlab_nodeeditor/workflows/Build/badge.svg)
 
@@ -45,22 +44,21 @@ jupyter labextension list
 
 It is recommended to first install JLNE and all of its dependencies on a fresh environment to ensure it is stable.
 
-1) Start by installing ![jupyterlab](https://jupyter.org/install) and all of its dependencies.
-2) Install ipykernel
+1) Install ![jupyterlab](https://jupyter.org/install), ipykernel (conda_env is your current environment name), ![NodeJS](https://nodejs.org/en/download/package-manager/), and pyyaml.
 ```
+conda install jupyterlab
 python -m ipykernel install --name conda_env --user
+conda install nodejs
+pip install pyyaml
 ```
-3) Clone the repo to your local environment and change the working directory to the jupyterlab_nodeeditor directory.
-4) Install the package via pip and copy package.json over
+2) Clone the repo to your local environment and change the working directory to the jupyterlab_nodeeditor directory.
+3) Install the package via pip
 ```
 pip install -e .
-cat jupyterlab_nodeeditor/labextension/package.json
 ```
-5) Install ![NodeJS](https://nodejs.org/en/download/package-manager/)
-6) Install jlpm and yaml
+4) Use jlpm to install javascript deps
 ```
 jlpm install
-pip install pyyaml
 ```
 7) Link your development version of the extension with JupyterLab
 ```

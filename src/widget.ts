@@ -253,10 +253,10 @@ export class ReteNodeModel extends DOMWidgetModel {
     const oldOutputs: ReteOutputModel[] = this.previous('outputs') || [];
     for (const remEl of oldOutputs.filter(_ => !newOutputs.includes(_))) {
       // These are instances, so we match based on keys
-      this._node.removeOutput(this._node.outputs.get(remEl.key));
+      this._node?.removeOutput(this._node.outputs.get(remEl.key));
     }
     for (const newEl of newOutputs.filter(_ => !oldOutputs.includes(_))) {
-      this._node.addOutput(newEl.getInstance());
+      this._node?.addOutput(newEl.getInstance());
     }
     this._node?.update();
   }
@@ -270,7 +270,7 @@ export class ReteNodeModel extends DOMWidgetModel {
   // the inputs and outputs will need serializers and deserializers
   title: string;
   type_name: string;
-  _node: Rete.Node;
+  _node?: Rete.Node;
   inputs: ReteInputModel[] = [];
   outputs: ReteOutputModel[] = [];
   static model_name = 'ReteNodeModel';
@@ -450,9 +450,9 @@ export class ReteEditorView extends DOMWidgetView {
         newNode._node.meta.nodeModel = newNode;
         newNode.changeInputs();
         newNode.changeOutputs();
+        this.editor.addNode(newNode._node);
       }
       console.log(newNode._node);
-      this.editor.addNode(newNode._node);
     }
   }
 

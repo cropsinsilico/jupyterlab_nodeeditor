@@ -117,6 +117,11 @@ class NodeInstanceModel(ipywidgets.Widget):
     outputs = traitlets.List(OutputSlotTrait()).tag(
         sync=True, **ipywidgets.widget_serialization
     )
+    display_element = traitlets.Instance(ipywidgets.VBox)
+
+    @traitlets.default("display_element")
+    def _default_display_element(self):
+        return ipywidgets.VBox([ipywidgets.Label(self.title)])
 
 
 @ipywidgets.register
@@ -175,4 +180,17 @@ class NodeEditor(traitlets.HasTraits):
         return SocketCollection()
 
     def _ipython_display_(self):
-        display(self.node_editor)
+        tabs = ipywidgets.Tab()
+
+        def update_nodes(change):
+            tabs.children = [node.display_element for node in change["new"]]
+            for i, node in enumerate(change["new"]):
+                tabs.set_title(i, f"Node {i+1} - {node.title}")
+
+        def update_selected(change):
+            tabs.selected_index = self.node_editor.nodes.index(change["new"])
+
+        self.node_editor.observe(update_nodes, ["nodes"])
+        self.node_editor.observe(update_selected, ["selected_node"])
+
+        display(ipywidgets.HBox([self.node_editor, tabs]))

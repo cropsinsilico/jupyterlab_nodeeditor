@@ -8,30 +8,53 @@ import jupyterlab_nodeeditor as jlne
 import yggdrasil.yamlfile
 import re
 
-photosynthesis_model = {}
 with open(ex_yamls['fakeplant']['python'], "r") as test_model:
     photosynthesis_model = yaml.safe_load(test_model)['model']
     
-# Hard coded function to clean up Photosynthesis model
+# Helper function to make a base empty dictionary
+# May not be needed in the future, but will cut time down for now
+
+def new_yggjlne_dict(num_inputs = 1, num_outputs = 1, name = "New Model"):
+    inputs, outputs = [], []
+    for ins in range(num_inputs):
+        inputs.append({'title': '', 'key': '', 'socket_type': ''})
+    for outs in range(num_outputs):
+        outputs.append({'title': '', 'key': '', 'socket_type': ''})
+    return {"inputs": inputs, "outputs": outputs, "title": name}
+
+
+# Improved version of making a JLNE-compliant dictionary from a Yggdrasil Model YAML
+# Still semi-hard coded for the Photosynthesis model
 def dict_conversion(model_dict):
-    model_dict.pop("language")
-    model_dict.pop("args")
-    model_dict["title"] = model_dict.pop("name")
-    for i in model_dict['inputs']:
-        i["title"] = i.pop("name")
-        i["socket_type"] = i["default_file"].pop("filetype")
-        i["key"] = "temp"
-        i.pop("default_file")
-    for i in model_dict['outputs']:
-        i["title"] = i.pop("name")
-        i["socket_type"] = i["default_file"].pop("filetype")
-        i["key"] = i["default_file"].pop("field_names")
-        i.pop("default_file")
+    n_ins = len(model_dict["inputs"])
+    n_outs = len(model_dict["outputs"])
+    # Use the helper function above to make a template
+    new_dict = new_yggjlne_dict(n_ins, n_outs, model_dict["name"]) 
+    
+    # Fill in the Inputs
+    for i in range(n_ins):
+        new_dict["inputs"][i]["title"] = model_dict["inputs"][i]["name"]
+        # Not sure what pattern we should go with for keys, I'll leave it to temp + numbers here
+        new_dict["inputs"][i]["key"] = "temp_in" + str(i)
+        # This part is slightly hard-coded since default_file doesn't always exist for all Ygg models
+        new_dict["inputs"][i]["title"] = model_dict["inputs"][i]["default_file"]["filetype"]
+        
+    # Fill in the Outputs, same as inputs with name changes
+    for o in range(n_outs):
+        new_dict["outputs"][o]["title"] = model_dict["outputs"][o]["name"]
+        # Not sure what pattern we should go with for keys, I'll leave it to temp + numbers here
+        new_dict["outputs"][o]["key"] = "temp_out" + str(o)
+        # This part is slightly hard-coded since default_file doesn't always exist for all Ygg models
+        new_dict["outputs"][o]["title"] = model_dict["outputs"][o]["default_file"]["filetype"]
+           
+    return new_dict
 
 # Tesing Code
-ps = jlne.NodeEditor()
-dict_conversion(photosynthesis_model)
-ps.add_component(photosynthesis_model)
+def load_example(ps = None):
+    ps = ps or jlne.NodeEditor()
+    dict_conversion(photosynthesis_model)
+    ps.add_component(photosynthesis_model)
+    return ps
 
 def update_slot(slot):
     rv = {}

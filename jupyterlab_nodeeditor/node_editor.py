@@ -121,7 +121,23 @@ class NodeInstanceModel(ipywidgets.Widget):
 
     @traitlets.default("display_element")
     def _default_display_element(self):
-        return ipywidgets.VBox([ipywidgets.Label(self.title)])
+        def _update_inputs(event):
+            input_box.children = [ipywidgets.Label("Inputs")] + [
+                ipywidgets.Label(f"Slot {i+1}: {slot.title} ({slot.key})")
+                for (i, slot) in enumerate(self.inputs)
+            ]
+
+        def _update_outputs(event):
+            output_box.children = [ipywidgets.Label("Outputs")] + [
+                ipywidgets.Label(f"Slot {i+1}: {slot.title} ({slot.key})")
+                for (i, slot) in enumerate(self.outputs)
+            ]
+
+        self.observe(_update_inputs, ["inputs"])
+        self.observe(_update_outputs, ["outputs"])
+        input_box = ipywidgets.VBox([ipywidgets.Label("Inputs")])
+        output_box = ipywidgets.VBox([ipywidgets.Label("Outputs")])
+        return ipywidgets.VBox([ipywidgets.Label(self.title), input_box, output_box])
 
 
 @ipywidgets.register

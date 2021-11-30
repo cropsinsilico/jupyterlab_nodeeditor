@@ -6,10 +6,11 @@ from .node_editor import NodeEditor
 from yggdrasil.examples import yamls as ex_yamls
 import jupyterlab_nodeeditor as jlne
 import yggdrasil.yamlfile
-import re
+# import re
 
 # Improved version of making a JLNE-compliant dictionary from a Yggdrasil Model YAML
 # Still semi-hard coded for the Photosynthesis model
+# TO-DO : Make more robust, Test on custom models
 def dict_conversion(model_dict):
     # Setup initial dictionary to be filled
     new_dict, new_dict["inputs"], new_dict["outputs"], new_dict["title"] = {}, [], [], model_dict["name"]
@@ -25,6 +26,11 @@ def dict_conversion(model_dict):
     return new_dict
 
 # Tesing Code
+# By default, load the photosynthesis model
+# ps - Node Editor instance that it is added to, default blank
+# TO-DO : Move this into the testing script
+# Add more tests and update as custom models are built
+# This section should just be pulled from the join script yggdrasil_tester.py
 def load_example(ps = None):
     with open(ex_yamls['fakeplant']['python'], "r") as test_model:
         photosynthesis_model = yaml.safe_load(test_model)['model']
@@ -34,6 +40,10 @@ def load_example(ps = None):
     ps.add_component(photosynthesis_model)
     return ps
 
+
+# Matt's Code Below (Note for Het, delete when done)
+
+# Update/Create a slot type for the model
 def update_slot(slot):
     rv = {}
     if isinstance(slot, list):
@@ -48,7 +58,9 @@ def update_slot(slot):
     rv.setdefault("socket_type", "bytes")
     return rv
 
-
+# Inputs
+# fn - Model file to test
+# node_editor - Node Editor Instance to display
 def parse_yggdrasil_yaml(fn, node_editor=None):
     if node_editor is None:
         node_editor = NodeEditor()

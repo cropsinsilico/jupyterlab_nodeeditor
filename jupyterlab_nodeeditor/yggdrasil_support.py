@@ -2,8 +2,9 @@ import uuid
 import yaml
 
 from .node_editor import NodeEditor
-
 from yggdrasil.examples import yamls as ex_yamls
+from yggdrasil_tester import YggModelTester
+
 import jupyterlab_nodeeditor as jlne
 import yggdrasil.yamlfile
 

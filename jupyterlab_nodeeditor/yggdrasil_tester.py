@@ -10,6 +10,8 @@
 # # # Editor
 # Make sure Vis is correct (Manual for now as I learn the JLNE output coding)
 
+from unittest import TestCase
+
 PASS = "Passed"
 FAIL = "Failed"
 
@@ -23,18 +25,22 @@ class YggModelTester:
         self.outputs = outputs
         self.name = name
 
+# Inputs getter
     @property
     def inputs(self):
         return self.__inputs
 
+# Outputs getter
     @property
     def outputs(self):
         return self.__outputs
 
+# Name getter
     @property
     def name(self):
         return self.__name
 
+# Base calling functions
     def __str__(self):
         return ("YggModelTester(Model Name: %s, Inputs: %s, Outputs: %s)" % (self.name, self.inputs, self.outputs))
 
@@ -43,3 +49,4 @@ class YggModelTester:
 
 # Check to make sure all necessary inputs are accounted for
     def test_inputs(self):
+        

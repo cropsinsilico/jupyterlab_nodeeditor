@@ -6,7 +6,6 @@ from .node_editor import NodeEditor
 from yggdrasil.examples import yamls as ex_yamls
 import jupyterlab_nodeeditor as jlne
 import yggdrasil.yamlfile
-# import re
 
 # Improved version of making a JLNE-compliant dictionary from a Yggdrasil Model YAML
 # Still semi-hard coded for the Photosynthesis model

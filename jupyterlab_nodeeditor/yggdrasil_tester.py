@@ -15,6 +15,31 @@ FAIL = "Failed"
 
 # I will start with just Photosynthesis model testing, then move on to develop and test custom models
 
-class YggNodeTester:
+class YggModelTester:
 
-    def __init__(self):
+# Initialize the Model
+    def __init__(self, inputs, outputs, name):
+        self.inputs = inputs
+        self.outputs = outputs
+        self.name = name
+
+    @property
+    def inputs(self):
+        return self.__inputs
+
+    @property
+    def outputs(self):
+        return self.__outputs
+
+    @property
+    def name(self):
+        return self.__name
+
+    def __str__(self):
+        return ("YggModelTester(Model Name: %s, Inputs: %s, Outputs: %s)" % (self.name, self.inputs, self.outputs))
+
+    def __repr__(self):
+        return self.__str__()
+
+# Check to make sure all necessary inputs are accounted for
+    def test_inputs(self):

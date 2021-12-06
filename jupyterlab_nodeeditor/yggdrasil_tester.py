@@ -10,14 +10,19 @@
 # # # Editor
 # Make sure Vis is correct (Manual for now as I learn the JLNE output coding)
 
-from unittest import TestCase
+import uuid
+import yaml
 
-PASS = "Passed"
-FAIL = "Failed"
+from yggdrasil.examples import yamls as ex_yamls
+import jupyterlab_nodeeditor as jlne
+import yggdrasil.yamlfile
+
+from unittest import TestCase
+from yggdrasil_support import *
 
 # I will start with just Photosynthesis model testing, then move on to develop and test custom models
 
-class YggModelTester:
+class YggModelTester(TestCase):
 
 # Initialize the Model
     def __init__(self, inputs, outputs, name):
@@ -47,6 +52,23 @@ class YggModelTester:
     def __repr__(self):
         return self.__str__()
 
-# Check to make sure all necessary inputs are accounted for
-    def test_inputs(self):
+# Get the input model locally
+def get_input():
+    model = input("Please enter model file name or enter 'example' for a prototype: ")
+    if model == "example":
+        return load_example()
+    infile = open(model, 'r')
+
+
+def main():
+    model_type = input("Please enter 'l' for a local input or 'r' for a remote input model: ")
+    if model_type == "l":
+        test_model = get_input()
+    elif model_type == "r":
+        return "Work in Progress"
+    else:
+        print("Invalid type")
+        return main()
         
+if __name__ == "__main__":
+    main()

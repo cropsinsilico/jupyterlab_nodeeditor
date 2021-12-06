@@ -10,12 +10,9 @@
 # # # Editor
 # Make sure Vis is correct (Manual for now as I learn the JLNE output coding)
 
-import uuid
 import yaml
-
 from yggdrasil.examples import yamls as ex_yamls
 import jupyterlab_nodeeditor as jlne
-import yggdrasil.yamlfile
 
 from unittest import TestCase
 from yggdrasil_support import *
@@ -58,6 +55,7 @@ def get_input():
     if model == "example":
         return load_example()
     infile = open(model, 'r')
+    infile.close()
 
 
 def main():

@@ -1,10 +1,6 @@
-import uuid
-import yaml
-
 from yggdrasil.examples import yamls as ex_yamls
-
+import yaml
 import jupyterlab_nodeeditor as jlne
-import yggdrasil.yamlfile
 
 # Improved version of making a JLNE-compliant dictionary from a Yggdrasil Model YAML
 # Still semi-hard coded for the Photosynthesis model

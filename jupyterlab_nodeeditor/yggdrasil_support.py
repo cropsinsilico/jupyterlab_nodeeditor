@@ -22,9 +22,8 @@ def dict_conversion(model_dict):
 # Tesing Code
 # By default, load the photosynthesis model
 # ps - Node Editor instance that it is added to, default blank
-# TO-DO : Move this into the testing script
+# TO-DO :
 # Add more tests and update as custom models are built
-# This section should just be pulled from the join script yggdrasil_tester.py
 def load_example(ps = None):
     with open(ex_yamls['fakeplant']['python'], "r") as test_model:
         photosynthesis_model = yaml.safe_load(test_model)['model']

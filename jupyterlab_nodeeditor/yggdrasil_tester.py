@@ -8,6 +8,7 @@
 # # Test all JLNE components added
 # # # Slots
 # # # Editor
+# Test to make sure model was added to editor instance
 # Make sure Vis is correct (Manual for now as I learn the JLNE output coding)
 
 import yaml
@@ -49,21 +50,38 @@ class YggModelTester(TestCase):
     def __repr__(self):
         return self.__str__()
 
+# Test to make sure there are inputs, outputs, and names
+    def test_validity(self):
+        model_keys = ["inputs", "outputs", "title"]
+        for key in model_keys:
+            assert key in self.keys()
+
+
+
+
 # Get the input model locally
 def get_input():
     model = input("Please enter model file name or enter 'example' for a prototype: ")
     if model == "example":
         return load_example()
-    infile = open(model, 'r')
-    infile.close()
+    return model
 
 
 def main():
     model_type = input("Please enter 'l' for a local input or 'r' for a remote input model: ")
+
     if model_type == "l":
         test_model = get_input()
+        with open(test_model, "r") as current_model:
+            print("Test samples here")
+            add_model = yaml.safe_load(current_model['model'])
+        ps = jlne.NodeEditor()
+        ps.add_component(dict_conversion(add_model))
+        return ps
+
     elif model_type == "r":
         return "Work in Progress"
+
     else:
         print("Invalid type")
         return main()

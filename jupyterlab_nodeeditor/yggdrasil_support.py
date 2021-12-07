@@ -33,3 +33,11 @@ def load_example(ps = None):
     # Add in the converted dictionary of the photosynthesis model
     ps.add_component(dict_conversion(photosynthesis_model))
     return ps
+
+# Junk Functions for PyTest
+def increment(x):
+    return x + 1
+
+def decrement(x):
+    return x - 1
+

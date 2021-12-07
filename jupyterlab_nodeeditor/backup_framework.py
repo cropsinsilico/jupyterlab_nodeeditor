@@ -17,18 +17,11 @@ import jupyterlab_nodeeditor as jlne
 
 from unittest import TestCase
 import unittest
-import yggdrasil_support
+from yggdrasil_support import *
 
 # I will start with just Photosynthesis model testing, then move on to develop and test custom models
 
 class YggModelTester(TestCase):
-
-# Junk Function Testing to learn PyTest
-    def test_decrement(self):
-        self.assertEqual(yggdrasil_support.decrement(3), 2)
-
-    def test_increment(self):
-        self.assertEqual(yggdrasil_support.increment(3), 4)
 
 # Initialize the Model
     def __init__(self, inputs, outputs, name):
@@ -95,4 +88,4 @@ def main():
         return main()
         
 if __name__ == "__main__":
-    unittest.main()
+    main()

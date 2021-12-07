@@ -34,10 +34,15 @@ def load_example(ps = None):
     ps.add_component(dict_conversion(photosynthesis_model))
     return ps
 
-# Junk Functions for PyTest
-def increment(x):
-    return x + 1
-
-def decrement(x):
-    return x - 1
+# Testing Functions
+# TO-DO
+# # Test to make sure all important values were extracted
+# # # Inputs
+# # # Outputs
+# # # Title
+# # Test all JLNE components added
+# # # Slots
+# # # Editor
+# Test to make sure model was added to editor instance
+# Make sure Vis is correct (Manual for now as I learn the JLNE output coding)
 

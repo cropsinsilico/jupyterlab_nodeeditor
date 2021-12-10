@@ -1,0 +1,31 @@
+# Sample Model 3 is making sure we have the connections module and it is ignored correctly
+models:
+  - name: model3A
+    language: python
+    args: ./src/model3A.py
+    inputs:
+      - name: input3A
+        type: object
+    outputs:
+      - name: output3A
+        type: object
+
+  - name: model3B
+    language: python
+    args: ./src/model3B.py
+    input:
+      - name: input3B
+        type: object
+    output:
+      - name: output3B
+        type: object
+
+connections:
+  - input: outputA  # Connection between model A output & model B input
+    output: inputB
+  - input: ./Input/input.txt  # Connection between file and model A input
+    output: inputA
+    filetype: map
+  - input: outputB  # Connection between model B output and file
+    output: ./output.txt
+    filetype: map

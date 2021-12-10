@@ -1,4 +1,5 @@
-# Sample Model 1: A basic model based off of an examply Yggdrasil model that contains 3 models rather than 1
+# Sample Model 1: A basic model based off of an example Yggdrasil model that contains 3 models rather than 1
+# Note there is no filetype asociated here and we use "models"
 models:
   - name: modelA
     language: python

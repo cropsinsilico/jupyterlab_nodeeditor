@@ -4,7 +4,7 @@ import jupyterlab_nodeeditor as jlne
 
 # Improved version of making a JLNE-compliant dictionary from a Yggdrasil Model YAML
 # Still semi-hard coded for the Photosynthesis model
-# TO-DO : Make more robust, Test on custom models
+# TO-DO : Make more robust, Test on custom models 1-3
 def dict_conversion(model_dict):
     # Setup initial dictionary to be filled
     new_dict, new_dict["inputs"], new_dict["outputs"], new_dict["title"] = {}, [], [], model_dict["name"]
@@ -19,11 +19,8 @@ def dict_conversion(model_dict):
            
     return new_dict
 
-# Tesing Code
 # By default, load the photosynthesis model
 # ps - Node Editor instance that it is added to, default blank
-# TO-DO :
-# Add more tests and update as custom models are built
 def load_example(ps = None):
     with open(ex_yamls['fakeplant']['python'], "r") as test_model:
         photosynthesis_model = yaml.safe_load(test_model)['model']
@@ -35,14 +32,14 @@ def load_example(ps = None):
     return ps
 
 # Testing Functions
-# TO-DO
-# # Test to make sure all important values were extracted
-# # # Inputs
-# # # Outputs
-# # # Title
-# # Test all JLNE components added
-# # # Slots
-# # # Editor
-# Test to make sure model was added to editor instance
-# Make sure Vis is correct (Manual for now as I learn the JLNE output coding)
+
+# The first test is just to visually ensure that the model appears in the node editor instance
+# This is NOT an explicit function
+# Look for Inputs, Outputs, and a proper title
+
+# Test 2 : Verify Editor instance w output
+# This is done with JLNE's built in class methods of calling a unique editor instance with the models
+
+# Test 3 : Blank
+
 

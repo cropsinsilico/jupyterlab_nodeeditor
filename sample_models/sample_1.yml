@@ -1,0 +1,19 @@
+# Sample Model 1: A basic model based off of an examply Yggdrasil model that contains 3 models rather than 1
+models:
+  - name: modelA
+    language: python
+    args: ./src/odelA.py
+    inputs: inputA
+    outputs: outputA
+
+  - name: modelB
+    language: python
+    args: ./src/modelB.py
+    inputs: inputB
+    outputs: outputB
+
+  - name: modelC
+    language: python
+    args: ./src/modelC.py
+    inputs: inputC
+    outputs: outputC

@@ -1,0 +1,24 @@
+# Taken from cropsinsilico/yggdrasil/yggdrasil/examples/fakeplant repo
+model:
+  name: PhotosynthesisModel
+  language: python
+  args: ./src/photosynthesis.py
+  inputs:
+    - name: light_intensity
+      default_file:
+        name: ./Input/light_intensity.txt
+        filetype: table
+    - name: temperature
+      default_file:
+        name: ./Input/temperature.txt
+        filetype: table
+    - name: co2
+      default_file:
+        name: ./Input/co2.txt
+        filetype: table
+  outputs:
+    - name: photosynthesis_rate
+      default_file:
+        name: ./Output/photosynthesis_rate.txt
+        filetype: table
+        field_names: photosynthesis_rate

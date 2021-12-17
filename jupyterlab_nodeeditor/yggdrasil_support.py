@@ -1,6 +1,7 @@
 from yggdrasil.examples import yamls as ex_yamls
 import yaml
 import jupyterlab_nodeeditor as jlne
+import pytest
 
 # Improved version of making a JLNE-compliant dictionary from a Yggdrasil Model YAML
 # Still semi-hard coded for the Photosynthesis model
@@ -39,6 +40,9 @@ def load_example(ps = None):
 
 # Test 2 : Verify Editor instance w output
 # This is done with JLNE's built in class methods of calling a unique editor instance with the models
+def test_instance(test_editor):
+    expected_editor = jlne.NodeEditor()
+    assert test_editor == expected_editor
 
 # Test 3 : Blank
 

@@ -3,7 +3,7 @@
 models:
   - name: modelA
     language: python
-    args: ./src/odelA.py
+    args: ./src/modelA.py
     inputs: inputA
     outputs: outputA
 

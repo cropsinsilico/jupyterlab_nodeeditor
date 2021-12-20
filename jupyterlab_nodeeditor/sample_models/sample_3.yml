@@ -13,10 +13,10 @@ models:
   - name: model3B
     language: python
     args: ./src/model3B.py
-    input:
+    inputs:
       - name: input3B
         type: object
-    output:
+    outputs:
       - name: output3B
         type: object
 

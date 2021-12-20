@@ -17,4 +17,4 @@ models:
     language: python
     args: ./src/modelC.py
     inputs: inputC
-    outputs: outputC
+    outputs: outputC 

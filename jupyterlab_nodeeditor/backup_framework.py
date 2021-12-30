@@ -1,3 +1,5 @@
+# NOTE: Suspending this file until further notice
+
 # TO-DO
 # Transfer Tests from yggdrasil_support.py
 # Create more tests to ensure the model was properly put in

@@ -168,6 +168,8 @@ export class ReteComponentModel extends DOMWidgetModel {
       }
       async builder(node: Rete.Node): Promise<void> {
         node.meta.componentType = thisTypeName;
+        node.meta.inputSlots = inputs;
+        node.meta.outputSlots = outputs;
         inputs.forEach((e: ReteInputModel) => {
           node.addInput(e.getInstance());
         });
@@ -243,7 +245,9 @@ export class ReteNodeModel extends DOMWidgetModel {
       this._node.removeInput(this._node.inputs.get(remEl.key));
     }
     for (const newEl of newInputs.filter(_ => !oldInputs.includes(_))) {
-      this._node.addInput(newEl.getInstance());
+      if (!this._node.inputs.has(newEl.getInstance().key)) {
+        this._node.addInput(newEl.getInstance());
+      }
     }
     this._node?.update();
   }
@@ -256,7 +260,9 @@ export class ReteNodeModel extends DOMWidgetModel {
       this._node?.removeOutput(this._node.outputs.get(remEl.key));
     }
     for (const newEl of newOutputs.filter(_ => !oldOutputs.includes(_))) {
-      this._node?.addOutput(newEl.getInstance());
+      if (!this._node.outputs.has(newEl.getInstance().key)) {
+        this._node?.addOutput(newEl.getInstance());
+      }
     }
     this._node?.update();
   }
@@ -470,6 +476,10 @@ export class ReteEditorView extends DOMWidgetView {
       view_module_version: ReteNodeModel.view_module_version
     })) as ReteNodeModel;
     newNode._node = node;
+    newNode.set('title', node.name);
+    newNode.set('inputs', node.meta.inputSlots || []);
+    newNode.set('outputs', node.meta.outputSlots || []);
+    newNode.save_changes();
     node.meta.nodeModel = newNode;
     const newNodes: ReteNodeModel[] = (
       this.model.get('nodes') as ReteNodeModel[]

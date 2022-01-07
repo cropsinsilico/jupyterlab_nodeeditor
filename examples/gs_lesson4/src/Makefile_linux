@@ -1,0 +1,23 @@
+IDIR = .
+CC ?= gcc
+CFLAGS += -I$(IDIR)
+
+ODIR = .
+
+LIBS = -lm $(LDFLAGS)
+
+.PHONY: all
+all: gs_lesson4_modelA gs_lesson4_modelB
+
+$(ODIR)/%.o: %.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
+gs_lesson4_modelA: $(ODIR)/gs_lesson4_modelA.o
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+gs_lesson4_modelB: $(ODIR)/gs_lesson4_modelB.o
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+.PHONY: clean
+clean:
+	rm -f $(ODIR)/*.o *~ gs_lesson4_modelA gs_lesson4_modelB $(IDIR)/*~ 

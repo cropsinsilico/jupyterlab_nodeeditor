@@ -1,0 +1,27 @@
+IDIR = .
+# CC ?= cl.exe
+# LINK ?= link.exe
+CFLAGS = $(CFLAGS) /I$(IDIR)
+
+SDIR = .
+ODIR = .
+
+LIBS = $(LDFLAGS)
+
+.PHONY: all
+all: gs_lesson4_modelA gs_lesson4_modelB
+
+gs_lesson4_modelA: $(ODIR)\gs_lesson4_modelA.o
+	$(CC) /Fe:$@.exe $** /link $(LIBS)
+
+gs_lesson4_modelB: $(ODIR)\gs_lesson4_modelB.o
+	$(CC) /Fe:$@.exe $** /link $(LIBS)
+
+{$(SDIR)}.c{$(ODIR)}.o:
+	$(CC) /c $< -Fo$@ $(CFLAGS)
+
+{$(SDIR)}.cpp{$(ODIR)}.o:
+	$(CC) /c $< -Fo$@ $(CFLAGS)
+
+clean:
+	del $(ODIR)\*.o *~ gs_lesson4_modelA.exe gs_lesson4_modelB.exe $(IDIR)\*~ 

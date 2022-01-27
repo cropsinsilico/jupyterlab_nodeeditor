@@ -437,6 +437,15 @@ export class ReteEditorView extends DOMWidgetView {
     this.editor.on(['nodecreated'], async (node: Rete.Node) =>
       this.createNewNode(node)
     );
+    this.editor.on(
+      ['connectioncreated', 'connectionremoved'],
+      // Note that I *believe* that the connectionremoved function is called
+      // whenever a connection is clicked on.  That's not super ideal, since
+      // we really only want to sync when the connection has been deleted.
+      // We may actually eventually want to explore using connectiondrop, which
+      // may fire only when the mouse is lifted.
+      async (connection: Rete.Connection) => this.updateConnection(connection)
+    );
     this.editor.view.resize();
     this.addNewComponent();
   }
@@ -460,6 +469,10 @@ export class ReteEditorView extends DOMWidgetView {
       }
       console.log(newNode._node);
     }
+  }
+
+  async updateConnection(connection: Rete.Connection): Promise<void> {
+    console.log('Updated ', connection);
   }
 
   async createNewNode(node: Rete.Node): Promise<void> {

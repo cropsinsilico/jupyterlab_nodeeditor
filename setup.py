@@ -54,16 +54,8 @@ setup_args = dict(
     license=pkg_json["license"],
     long_description=long_description,
     long_description_content_type="text/markdown",
-    packages=setuptools.find_packages(),
-    install_requires=[
-        "jupyter_server>=1.6,<2",
-        "jupyterlab~=3.1",
-        "ipywidgets>=7.6.1",
-        "traitlets>=5.0.5",
-    ],
     zip_safe=False,
     include_package_data=True,
-    python_requires=">=3.6",
     platforms="Linux, Mac OS X, Windows",
     keywords=["Jupyter", "JupyterLab", "JupyterLab3"],
     classifiers=[

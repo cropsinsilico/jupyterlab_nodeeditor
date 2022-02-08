@@ -1,0 +1,14 @@
+model:
+  name: model_rng
+  driver: PythonModelDriver
+  args: model_rng_test.py   
+
+  outputs:
+    - name: outputRNG_file
+
+connections:
+  - input: outputRNG_file
+    output: 
+      name: output_file_rng.txt
+      filetype: table
+      field_names: number

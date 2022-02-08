@@ -1,17 +1,19 @@
-models:
-  - name: model_rotxx
-    language: python
-    args: ./model_rotxx_test.py
-    function: rotxx_func
-    inputs: input_rotxx
-    outputs: output_rotxx
+model:
+  - name: model_reader
+    driver: PythonModelDriver
+    args: model_reader_test.py
+
+    inputs: 
+      name: inputReader_file
+    outputs: 
+      name: outputReader_file
 
 connections:
   - input: 
-      name: ./insouts/input_rotxx.txt
-      filetype: table
-    output: input_rotxx
-  - input: output_rotxx
+      name: ./insouts/input_reader.txt
+      filetype: ascii
+    output: inputReader_file
+  - input: outputReader_file
     output: 
-      name: ./insouts/output_rotxx.txt
+      name: ./insouts/output_reader.txt
       filetype: table

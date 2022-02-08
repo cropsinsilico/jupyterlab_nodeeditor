@@ -9,6 +9,6 @@ model:
 connections:
   - input: outputRNG_file
     output: 
-      name: output_file_rng.txt
+      name: ./insouts/output_file_rng.txt
       filetype: table
       field_names: number

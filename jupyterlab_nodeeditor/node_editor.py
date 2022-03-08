@@ -30,6 +30,12 @@ class InputSlot(ipywidgets.Widget):
         sync=True, **ipywidgets.widget_serialization
     )
 
+    def _ipython_display_(self):
+        display(self.widget())
+
+    def widget(self):
+        return ipywidgets.Label(f"Slot {self.key}: {self.title} ({self.socket_type})")
+
 
 class InputSlotTrait(traitlets.TraitType):
     default_value = None
@@ -123,21 +129,21 @@ class NodeInstanceModel(ipywidgets.Widget):
     def _default_display_element(self):
         def _update_inputs(event):
             input_box.children = [ipywidgets.Label("Inputs")] + [
-                ipywidgets.Label(f"Slot {i+1}: {slot.title} ({slot.key})")
-                for (i, slot) in enumerate(self.inputs)
+                slot.widget() for slot in self.inputs
             ]
 
         def _update_outputs(event):
             output_box.children = [ipywidgets.Label("Outputs")] + [
-                ipywidgets.Label(f"Slot {i+1}: {slot.title} ({slot.key})")
-                for (i, slot) in enumerate(self.outputs)
+                slot.widget() for slot in self.outputs
             ]
 
+        label = ipywidgets.Label()
+        traitlets.link((self, "title"), (label, "value"))
         self.observe(_update_inputs, ["inputs"])
         self.observe(_update_outputs, ["outputs"])
         input_box = ipywidgets.VBox([ipywidgets.Label("Inputs")])
         output_box = ipywidgets.VBox([ipywidgets.Label("Outputs")])
-        return ipywidgets.VBox([ipywidgets.Label(self.title), input_box, output_box])
+        return ipywidgets.VBox([label, input_box, output_box])
 
 
 @ipywidgets.register

@@ -326,16 +326,24 @@ export class ReteEditorModel extends DOMWidgetModel {
     this.addNewComponent();
   }
 
+  async updateViews(): Promise<void> {
+    for (const viewId of Object.keys(this.views)) {
+      await this.views[viewId].then(v => {
+        (v as ReteEditorView).editor.view.area.update();
+      });
+    }
+  }
+
   private async onCommand(command: any, buffers: any) {
     let newConfig: Data;
     const myConfig: { [key: string]: any } = {};
     switch (command.name) {
       case 'setConfig':
         newConfig = command.args[0] as Data;
-        for (const viewId of Object.keys(this.views)) {
-          this.views[viewId].then(v =>
-            (v as ReteEditorView).editor.fromJSON(newConfig)
-          );
+        this.updateViews();
+        for await (const viewId of Object.keys(this.views)) {
+          const view = await this.views[viewId];
+          (view as ReteEditorView).editor.fromJSON(newConfig);
         }
         break;
       case 'getConfig':
@@ -415,28 +423,19 @@ export class ReteEditorView extends DOMWidgetView {
     this.editor.use(ConnectionPlugin);
     this.editor.use(ContextMenuPlugin);
     this.editor.register(defaultComponent);
-    this.editor.on(
-      [
-        'process',
-        'nodecreated',
-        'noderemoved',
-        'connectioncreated',
-        'connectionremoved'
-      ],
-      async () => {
-        await this.model.engine.abort();
-        await this.model.engine.process(this.editor.toJSON());
-      }
-    );
+    this.editor.on(['noderemoved'], async () => {
+      this.model.updateViews();
+    });
     this.editor.on(['nodeselected'], async (node: Rete.Node) => {
       // Figure out which NodeModel it corresponds to
       console.log('selected', node.meta.nodeModel);
       this.model.set('selected_node', node.meta.nodeModel);
       this.model.save_changes();
     });
-    this.editor.on(['nodecreated'], async (node: Rete.Node) =>
-      this.createNewNode(node)
-    );
+    this.editor.on(['nodecreated'], async (node: Rete.Node) => {
+      await this.createNewNode(node);
+      this.model.updateViews();
+    });
     this.editor.on(
       ['connectioncreated', 'connectionremoved'],
       // Note that I *believe* that the connectionremoved function is called
@@ -453,21 +452,23 @@ export class ReteEditorView extends DOMWidgetView {
   async updateNodes(model: ReteEditorModel): Promise<void> {
     const oldNodes: ReteNodeModel[] = model.previous('nodes');
     const newNodes: ReteNodeModel[] = model.get('nodes');
-    console.log('oldNodes', oldNodes);
+    console.log('oldNodes', this.divId, oldNodes);
     for (const remNode of oldNodes.filter(_ => !newNodes.includes(_))) {
       // These are instances, so we match based on keys
       this.editor.removeNode(remNode._node);
     }
     for (const newNode of newNodes.filter(_ => !oldNodes.includes(_))) {
-      console.log('newnode', newNode);
+      console.log('newnode', this.divId, newNode);
       if (newNode._node === undefined) {
         newNode._node = new Rete.Node(newNode.get('type_name'));
         newNode._node.meta.nodeModel = newNode;
         newNode.changeInputs();
         newNode.changeOutputs();
+      }
+      if (!this.editor.nodes.includes(newNode._node)) {
         this.editor.addNode(newNode._node);
       }
-      console.log(newNode._node);
+      console.log(this.divId, newNode._node);
     }
   }
 

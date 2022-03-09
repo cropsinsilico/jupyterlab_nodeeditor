@@ -1,4 +1,0 @@
-# number	string
-# %d	%s
-13	berlin
-13	berlin

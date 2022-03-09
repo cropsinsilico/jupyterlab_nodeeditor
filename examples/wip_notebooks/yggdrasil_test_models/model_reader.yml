@@ -1,0 +1,18 @@
+model:
+  - name: model_reader
+    driver: PythonModelDriver
+    args: model_reader_test.py
+
+    inputs: 
+      name: inputReader
+    outputs: 
+      name: outputReader
+
+connections:
+  - input: 
+      name: ./insouts/input_reader.txt
+    output: inputReader
+  - input: outputReader
+    output: 
+      name: ./insouts/output_reader.txt
+      filetype: table

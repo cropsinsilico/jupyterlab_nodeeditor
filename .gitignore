@@ -111,5 +111,5 @@ dmypy.json
 # OSX files
 .DS_Store
 
-# WIP stuff
-/examples/wip_notebooks
+# WIP stuff - enabled for my repo
+# /examples/wip_notebooks

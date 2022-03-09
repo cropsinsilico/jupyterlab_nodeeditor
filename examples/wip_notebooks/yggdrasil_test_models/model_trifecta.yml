@@ -1,0 +1,37 @@
+models:
+  - name: model_rng
+    language: python
+    args: ./model_rng_test.py
+    outputs:
+      - name: outputRNG
+
+  - name: model_reader
+    language: python
+    args: ./model_reader_test.py
+    input: 
+      - name: inputReader
+    output: 
+      - name: outputReader
+
+  - name: model_rotxx
+    language: python
+    args: ./model_rotxx_test.py
+    function: rotxx_func
+    inputs: 
+      - name: input_rotxx
+    outputs: 
+      - name: output_rotxx
+
+
+connections:
+  - input: ./insouts/input_reader.txt
+    output: inputReader
+    filetype: ascii
+  - inputs: 
+      - name: outputRNG
+      - name: outputReader
+    output: input_rotxx
+    input_pattern: gather
+  - input: output_rotxx
+    output: ./trifecta_output.txt
+    filetype: table

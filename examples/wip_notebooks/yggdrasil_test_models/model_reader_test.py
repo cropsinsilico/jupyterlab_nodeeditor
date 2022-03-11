@@ -17,4 +17,4 @@ if __name__ == '__main__':
             if not ret:
                 raise RuntimeError("ERROR SENDING LINE")
         else:
-            print("End of File")
+            break

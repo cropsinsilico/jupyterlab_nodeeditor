@@ -14,6 +14,7 @@ if __name__ == '__main__':
     while True:
         if fake_timer == 4:
             break
-        rng = np.random.randint(0, 25)
+        rng = np.random.randint(1, 25)
         out_file.send(rng)
         fake_timer += 1
+        time.sleep(1)

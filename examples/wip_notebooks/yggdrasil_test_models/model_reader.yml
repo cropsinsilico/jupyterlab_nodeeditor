@@ -12,6 +12,7 @@ connections:
   - input: 
       name: ./insouts/input_reader.txt
     output: inputReader
+    filetype: ascii
   - input: outputReader
     output: 
       name: ./insouts/output_reader.txt

@@ -112,4 +112,4 @@ dmypy.json
 .DS_Store
 
 # WIP stuff - enabled for my repo
-# /examples/wip_notebooks
+/examples/wip_notebooks

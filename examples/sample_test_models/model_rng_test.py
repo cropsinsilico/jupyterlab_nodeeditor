@@ -10,7 +10,6 @@ if __name__ == '__main__':
     fake_timer = 0
 
     # Send 4 numbers through the model
-    # TO-DO: Make it so it automatically detects the number of lines
     while True:
         if fake_timer == 4:
             break

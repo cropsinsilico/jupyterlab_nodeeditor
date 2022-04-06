@@ -114,10 +114,5 @@ dmypy.json
 # WIP stuff 
 /examples/wip_notebooks
 
-# Base notebooks that should not be adjusted
-/examples/autogenerate.ipynb
-/examples/example_jlne.ipynb
-/examples/example_matplotlib.ipynb
-/examples/example_node_editor.ipynb
-/examples/example_rete.ipynb
-/examples/make_an_editor.ipynb
+# VS Code Folder
+/.vscode

@@ -1,8 +1,7 @@
-from yggdrasil.examples import yamls as ex_yamls
 import yaml
 import jupyterlab_nodeeditor as jlne
 
-def dict_conversion(model_file):
+def _dict_conversion(model_file):
     # Use flags to determine model input type
     is_dict, is_list = False, False
     
@@ -50,7 +49,27 @@ def dict_conversion(model_file):
 
 # ps - Node Editor instance that it is added to, default blank
 def load_model(ps = None):
-    # Photosynthesis broken right now with tentative changes
+    """
+    Load a Yggdrasil model in the form of a YAML file for use in JLNE.
+
+    The function will open a YAML through an inputted filepath and use the built-in parser
+    in order to find and turn models into components to be used in the Node Editor.
+
+    Parameters
+    ----------
+    ps : 
+        Jupyter Lab Node Editor instance that the models should be added to.
+
+    Returns
+    -------
+    NodeEditor() instance
+        The NodeEditor that was inputted, now with the models as components or a new one if the input was left blank.
+
+    Example Usage
+    -------------
+    >>> load_model()
+    >>> sample_test_models/model_trifecta.yml
+    """
     filepath = input("Please enter filepath for model: ")
     
     # Variable that will be used as the processed model
@@ -60,11 +79,8 @@ def load_model(ps = None):
     if filepath:
         with open(filepath, "r") as sample:
             fsample = yaml.safe_load(sample)
-            
-    # else:
-    #     print("Loading Photosynthesis Model into Editor...")
-    #     with open(ex_yamls['fakeplant']['python'], "r") as sample:
-    #         fsample = yaml.safe_load(sample)["model"]
+    else:
+        return "No filepath inputted."
     
     # This is our socket collection: a list that is converted to a tuple at each instance of adding a component
     socket_list = []
@@ -74,7 +90,7 @@ def load_model(ps = None):
     ne_instance = ps or jlne.NodeEditor()
     
     # Use our conversion/parser to get a list of models
-    model_list = dict_conversion(fsample)
+    model_list = _dict_conversion(fsample)
     
     # Manually parse the jlne Components due to the bug
     for model in model_list:

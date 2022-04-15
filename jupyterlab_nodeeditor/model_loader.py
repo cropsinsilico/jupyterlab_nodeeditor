@@ -43,8 +43,36 @@ def _dict_conversion(model_file):
                         new_dict["outputs"].append({'title': out["name"], 'key': f"temp_out{o}", 'socket_type': "connection"})
                 list_of_models.append(new_dict)
         
+        # If the key is just "model", that's how we know it is a single model, so no loop needed
+        elif "model" in model_file.keys():
+            #  model_file["model"].keys() = dict_keys(['name', 'language', 'args', 'inputs', 'outputs'])
+            
+            # Use a variable to story this model dictionary as reference to save a lot of typing
+            imodel = model_file["model"]
+            
+            # Setup dictionary to be filled
+            new_dict, new_dict["inputs"], new_dict["outputs"], new_dict['title'] = {}, [], [], imodel['name']
+              
+            # Fill in the Inputs
+            if "input" in imodel.keys():
+                for i, inp in enumerate(imodel["input"]):
+                    new_dict["inputs"].append({'title': inp["name"], 'key': f"temp_in{i}", 'socket_type': "connection"})
+            elif "inputs" in imodel.keys():
+                for i, inp in enumerate(imodel["inputs"]):
+                    new_dict["inputs"].append({'title': inp["name"], 'key': f"temp_in{i}", 'socket_type': "connection"})
+        
+            # Fill in the Outputs, same as inputs with name changes
+            if "output" in imodel.keys():
+                for o, out in enumerate(imodel["output"]):
+                    new_dict["outputs"].append({'title': out["name"], 'key': f"temp_out{o}", 'socket_type': "connection"})
+            elif "outputs" in imodel.keys():
+                for o, out in enumerate(imodel["outputs"]):
+                    new_dict["outputs"].append({'title': out["name"], 'key': f"temp_out{o}", 'socket_type': "connection"})
+            list_of_models.append(new_dict)
+        
         # We return a list here so that way loading the models is uniform for both multi-model and single-model files
         return list_of_models
+        
 
 
 # ps - Node Editor instance that it is added to, default blank
@@ -75,7 +103,7 @@ def load_model(ps = None):
     # Variable that will be used as the processed model
     fsample = None
     
-    # Check to see if input is blank or not, run the respective code to get the model from file or the Photosynthesis example
+    # Check to see if input is blank or not, run the respective code to get the model from file
     if filepath:
         with open(filepath, "r") as sample:
             fsample = yaml.safe_load(sample)
@@ -85,8 +113,7 @@ def load_model(ps = None):
     # This is our socket collection: a list that is converted to a tuple at each instance of adding a component
     socket_list = []
     
-    # Convert it all and add it into the editor, then return the entire editor
-    
+    # Convert it all and add it into the editor, then return the entire editor  
     ne_instance = ps or jlne.NodeEditor()
     
     # Use our conversion/parser to get a list of models
@@ -96,12 +123,10 @@ def load_model(ps = None):
     for model in model_list:
         model_ins, model_outs = [], []
         for model_in in model["inputs"]:
-            # print("model_in: ", model_in)
             socket_list.append(model_in["socket_type"])
             model_ins.append(jlne.InputSlot(title = model_in["title"], key = model_in["key"], socket_type = model_in["socket_type"], sockets = jlne.SocketCollection(socket_types = tuple(socket_list))))
             
         for model_out in model["outputs"]:
-            # print("model_out: ", model_out)
             socket_list.append(model_out["socket_type"])
             model_outs.append(jlne.OutputSlot(title = model_out["title"], key = model_out["key"], socket_type = model_out["socket_type"], sockets = jlne.SocketCollection(socket_types = tuple(socket_list))))
         

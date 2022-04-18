@@ -110,3 +110,9 @@ dmypy.json
 
 # OSX files
 .DS_Store
+
+# WIP stuff 
+/examples/wip_notebooks
+
+# VS Code Folder
+/.vscode

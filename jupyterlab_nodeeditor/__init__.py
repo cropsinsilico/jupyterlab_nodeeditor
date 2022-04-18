@@ -43,4 +43,5 @@ from .node_editor import (
     OutputSlot,
     SocketCollection,
 )
-from .yggdrasil_support import parse_yggdrasil_yaml
+
+from .model_loader import load_model

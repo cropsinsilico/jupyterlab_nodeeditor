@@ -113,6 +113,7 @@ dmypy.json
 
 # WIP stuff 
 /examples/wip_notebooks
+/examples/sample_test_models/trifecta_output
 
 # Not my examples
 /examples/example_jlne

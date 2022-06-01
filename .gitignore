@@ -114,6 +114,13 @@ dmypy.json
 # WIP stuff 
 /examples/wip_notebooks
 
+# Not my examples
+/examples/example_jlne
+/examples/example_matplotlib
+/examples/example_node_editor
+/examples/example_rete
+/examples/make_an_editor
+
 # VS Code Folder
 /.vscode
 examples/example_jlne.ipynb

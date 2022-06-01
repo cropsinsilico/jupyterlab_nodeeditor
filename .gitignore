@@ -116,3 +116,5 @@ dmypy.json
 
 # VS Code Folder
 /.vscode
+examples/example_jlne.ipynb
+examples/sample_test_models/trifecta_output.txt

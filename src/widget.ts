@@ -65,6 +65,7 @@ abstract class ReteIOModel extends DOMWidgetModel {
       ...super.defaults(),
       key: undefined,
       title: undefined,
+      multi_connection: undefined,
       socket_type: undefined,
       _model_name: ReteIOModel.model_name,
       _model_module: ReteIOModel.model_module,
@@ -76,6 +77,7 @@ abstract class ReteIOModel extends DOMWidgetModel {
     super.initialize(attributes, options);
     this.key = this.get('key');
     this.title = this.get('title');
+    this.multi_connection = this.get("multi_connection")
     this.socket_type = this.get('socket_type');
     this.sockets = this.get('sockets');
   }
@@ -85,6 +87,7 @@ abstract class ReteIOModel extends DOMWidgetModel {
 
   key: string;
   title: string;
+  multi_connection:boolean;
   socket_type: string;
   sockets: ReteSocketCollectionModel;
   static model_name = 'ReteIOModel';
@@ -109,7 +112,8 @@ export class ReteInputModel extends ReteIOModel {
     return new Rete.Input(
       this.key,
       this.title,
-      this.sockets.getSocket(this.socket_type)
+      this.sockets.getSocket(this.socket_type),
+      this.multi_connection
     );
   }
 
@@ -128,7 +132,8 @@ export class ReteOutputModel extends ReteIOModel {
     return new Rete.Output(
       this.key,
       this.title,
-      this.sockets.getSocket(this.socket_type)
+      this.sockets.getSocket(this.socket_type),
+      this.multi_connection
     );
   }
 

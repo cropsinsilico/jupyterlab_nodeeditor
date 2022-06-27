@@ -9,6 +9,7 @@ import {
 import ConnectionPlugin from 'rete-connection-plugin';
 import ContextMenuPlugin from 'rete-context-menu-plugin';
 import VueRenderPlugin from 'rete-react-render-plugin';
+import AutoArrangePlugin from 'rete-auto-arrange-plugin';
 import {
   DOMWidgetModel,
   DOMWidgetView,
@@ -359,7 +360,6 @@ export class ReteEditorModel extends DOMWidgetModel {
         break;
     }
   }
-
   addNewComponent(): void {
     this._components = this.get('_components');
     this._components.forEach(v => {
@@ -387,6 +387,7 @@ export class ReteEditorModel extends DOMWidgetModel {
   static view_module_version = MODULE_VERSION;
 }
 
+export class ReteConnectionModel extends DOMWidgetModel {}
 export class ReteEditorView extends DOMWidgetView {
   render(): void {
     this.div = document.createElement('div');
@@ -422,6 +423,7 @@ export class ReteEditorView extends DOMWidgetView {
     this.editor.use(VueRenderPlugin);
     this.editor.use(ConnectionPlugin);
     this.editor.use(ContextMenuPlugin);
+    this.editor.use(AutoArrangePlugin, { margin: { x: 25, y: 25 }, depth: 0 });
     this.editor.register(defaultComponent);
     this.editor.on(['noderemoved'], async () => {
       this.model.updateViews();
@@ -467,6 +469,7 @@ export class ReteEditorView extends DOMWidgetView {
       }
       if (!this.editor.nodes.includes(newNode._node)) {
         this.editor.addNode(newNode._node);
+        (this.editor as any).arrange(newNode._node);
       }
       console.log(this.divId, newNode._node);
     }

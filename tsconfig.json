@@ -19,7 +19,7 @@
     "strict": true,
     "strictNullChecks": false,
     "target": "es2017",
-    "types": ["node", "rete-react-render-plugin", "rete-vue-render-plugin", "rete-context-menu-plugin", "resize-observer-browser"],
+    "types": ["node", "rete-react-render-plugin", "rete-vue-render-plugin", "rete-context-menu-plugin", "resize-observer-browser", "rete-auto-arrange-plugin"],
     "skipLibCheck": true
   },
   "include": ["src/*"],

@@ -360,7 +360,7 @@ export class ReteEditorModel extends DOMWidgetModel {
         for await (const viewId of Object.keys(this.views)) {
           const view = (await this.views[viewId]) as ReteEditorView;
           for (const node of view.editor.nodes) {
-            (view.editor as any).arrange(node);
+            view.editor.trigger('arrange' as any, { node });
           }
         }
         break;
@@ -477,7 +477,9 @@ export class ReteEditorView extends DOMWidgetView {
       }
       if (!this.editor.nodes.includes(newNode._node)) {
         this.editor.addNode(newNode._node);
-        (this.editor as any).arrange(newNode._node);
+        //(this.editor as any).arrange(newNode._node);
+        const node = newNode._node;
+        (this.editor as any).trigger('arrange', { node });
       }
       console.log(this.divId, newNode._node);
     }

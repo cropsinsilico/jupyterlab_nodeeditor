@@ -356,6 +356,14 @@ export class ReteEditorModel extends DOMWidgetModel {
         this.set('editorConfig', this.editorConfig);
         this.save();
         break;
+      case 'arrangeNodes':
+        for await (const viewId of Object.keys(this.views)) {
+          const view = (await this.views[viewId]) as ReteEditorView;
+          for (const node of view.editor.nodes) {
+            (view.editor as any).arrange(node);
+          }
+        }
+        break;
       default:
         break;
     }

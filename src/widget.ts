@@ -77,7 +77,7 @@ abstract class ReteIOModel extends DOMWidgetModel {
     super.initialize(attributes, options);
     this.key = this.get('key');
     this.title = this.get('title');
-    this.multi_connection = this.get("multi_connection")
+    this.multi_connection = this.get('multi_connection');
     this.socket_type = this.get('socket_type');
     this.sockets = this.get('sockets');
   }
@@ -87,7 +87,7 @@ abstract class ReteIOModel extends DOMWidgetModel {
 
   key: string;
   title: string;
-  multi_connection:boolean;
+  multi_connection: boolean;
   socket_type: string;
   sockets: ReteSocketCollectionModel;
   static model_name = 'ReteIOModel';

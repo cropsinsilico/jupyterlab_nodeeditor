@@ -8,7 +8,7 @@ import {
 } from 'rete/types/core/data';
 import ConnectionPlugin from 'rete-connection-plugin';
 import ContextMenuPlugin from 'rete-context-menu-plugin';
-import VueRenderPlugin from 'rete-react-render-plugin';
+import ReactRenderPlugin from 'rete-react-render-plugin';
 import AutoArrangePlugin from 'rete-auto-arrange-plugin';
 import {
   DOMWidgetModel,
@@ -428,7 +428,7 @@ export class ReteEditorView extends DOMWidgetView {
       `${MODULE_NAME}@${MODULE_VERSION}`,
       this.div
     );
-    this.editor.use(VueRenderPlugin);
+    this.editor.use(ReactRenderPlugin);
     this.editor.use(ConnectionPlugin);
     this.editor.use(ContextMenuPlugin);
     this.editor.use(AutoArrangePlugin, { margin: { x: 25, y: 25 }, depth: 0 });

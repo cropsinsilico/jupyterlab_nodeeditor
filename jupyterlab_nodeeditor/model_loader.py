@@ -76,7 +76,7 @@ def _dict_conversion(model_file):
 
 
 # ps - Node Editor instance that it is added to, default blank
-def load_model(ps = None):
+def load_model(path = None, ne_instance = None):
     """
     Load a Yggdrasil model in the form of a YAML file for use in JLNE.
 
@@ -98,7 +98,12 @@ def load_model(ps = None):
     >>> load_model()
     >>> sample_test_models/model_trifecta.yml
     """
-    filepath = input("Please enter filepath for model: ")
+    # Default node editor instance and local filepath copy
+    if str(type(ne_instance)) != "<class 'jupyterlab_nodeeditor.node_editor.NodeEditor'>":
+        return "Error: No Node Editor instance inputted"
+    else:
+        ps = ne_instance
+    filepath = path
     
     # Variable that will be used as the processed model
     fsample = None
@@ -108,7 +113,7 @@ def load_model(ps = None):
         with open(filepath, "r") as sample:
             fsample = yaml.safe_load(sample)
     else:
-        return "No filepath inputted."
+        return f"Error: Invalid filepath {filepath}"
     
     # This is our socket collection: a list that is converted to a tuple at each instance of adding a component
     socket_list = []

@@ -126,3 +126,5 @@ dmypy.json
 /.vscode
 examples/example_jlne.ipynb
 examples/sample_test_models/trifecta_output.txt
+examples/sample_test_models/trifecta_output.txt
+examples/sample_test_models/insouts/photosynthesis_rate.txt

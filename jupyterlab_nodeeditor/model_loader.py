@@ -1,3 +1,17 @@
+"""
+TO DO
+
+Format the code with black
+
+I don't think we should be returning any instances. The model_loader function should merely transform the input yaml into a set of dict objects that can be supplied to add_component. This helps to make sure that the SocketCollection instance that's used by all the different components is the same.
+
+We need to parse the data types being accepted and emitted by the different slots. That means using the default that yggdrasil assumes, if we need to; this is one (of several) instances that relying on yggdrasil's normalization code would be helpful. (@langmm may have thoughts on how to have it fill out the defaults without instantiating any compilation or execution procedures.)
+
+I believe you can considerably simplify the dictionary translation code.
+"""
+
+
+
 import yaml
 import jupyterlab_nodeeditor as jlne
 
@@ -29,18 +43,18 @@ def _dict_conversion(model_file):
                 # Fill in the Inputs
                 if "input" in model.keys():
                     for i, inp in enumerate(model["input"]):
-                        new_dict["inputs"].append({'title': inp["name"], 'key': f"temp_in{i}", 'socket_type': "connection"})
+                        new_dict["inputs"].append({'title': inp["name"], 'key': f"temp_in{i}", 'socket_type': "bytes"})
                 elif "inputs" in model.keys():
                     for i, inp in enumerate(model["inputs"]):
-                        new_dict["inputs"].append({'title': inp["name"], 'key': f"temp_in{i}", 'socket_type': "connection"})
+                        new_dict["inputs"].append({'title': inp["name"], 'key': f"temp_in{i}", 'socket_type': "bytes"})
         
                 # Fill in the Outputs, same as inputs with name changes
                 if "output" in model.keys():
                     for o, out in enumerate(model["output"]):
-                        new_dict["outputs"].append({'title': out["name"], 'key': f"temp_out{o}", 'socket_type': "connection"})
+                        new_dict["outputs"].append({'title': out["name"], 'key': f"temp_out{o}", 'socket_type': "bytes"})
                 elif "outputs" in model.keys():
                     for o, out in enumerate(model["outputs"]):
-                        new_dict["outputs"].append({'title': out["name"], 'key': f"temp_out{o}", 'socket_type': "connection"})
+                        new_dict["outputs"].append({'title': out["name"], 'key': f"temp_out{o}", 'socket_type': "bytes"})
                 list_of_models.append(new_dict)
         
         # If the key is just "model", that's how we know it is a single model, so no loop needed
@@ -56,18 +70,18 @@ def _dict_conversion(model_file):
             # Fill in the Inputs
             if "input" in imodel.keys():
                 for i, inp in enumerate(imodel["input"]):
-                    new_dict["inputs"].append({'title': inp["name"], 'key': f"temp_in{i}", 'socket_type': "connection"})
+                    new_dict["inputs"].append({'title': inp["name"], 'key': f"temp_in{i}", 'socket_type': "bytes"})
             elif "inputs" in imodel.keys():
                 for i, inp in enumerate(imodel["inputs"]):
-                    new_dict["inputs"].append({'title': inp["name"], 'key': f"temp_in{i}", 'socket_type': "connection"})
+                    new_dict["inputs"].append({'title': inp["name"], 'key': f"temp_in{i}", 'socket_type': "bytes"})
         
             # Fill in the Outputs, same as inputs with name changes
             if "output" in imodel.keys():
                 for o, out in enumerate(imodel["output"]):
-                    new_dict["outputs"].append({'title': out["name"], 'key': f"temp_out{o}", 'socket_type': "connection"})
+                    new_dict["outputs"].append({'title': out["name"], 'key': f"temp_out{o}", 'socket_type': "bytes"})
             elif "outputs" in imodel.keys():
                 for o, out in enumerate(imodel["outputs"]):
-                    new_dict["outputs"].append({'title': out["name"], 'key': f"temp_out{o}", 'socket_type': "connection"})
+                    new_dict["outputs"].append({'title': out["name"], 'key': f"temp_out{o}", 'socket_type': "bytes"})
             list_of_models.append(new_dict)
         
         # We return a list here so that way loading the models is uniform for both multi-model and single-model files

@@ -113,6 +113,21 @@ dmypy.json
 
 # WIP stuff 
 /examples/wip_notebooks
+/examples/sample_test_models/trifecta_output
+
+# Not my examples
+/examples/example_jlne
+/examples/example_matplotlib
+/examples/example_node_editor
+/examples/example_rete
+/examples/make_an_editor
 
 # VS Code Folder
 /.vscode
+examples/example_jlne.ipynb
+examples/sample_test_models/trifecta_output.txt
+examples/sample_test_models/trifecta_output.txt
+examples/sample_test_models/insouts/photosynthesis_rate.txt
+jupyterlab_nodeeditor/model_loader_alpha.ipynb
+package-lock.json
+yarn.lock

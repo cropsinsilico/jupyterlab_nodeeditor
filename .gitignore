@@ -129,3 +129,5 @@ examples/sample_test_models/trifecta_output.txt
 examples/sample_test_models/trifecta_output.txt
 examples/sample_test_models/insouts/photosynthesis_rate.txt
 jupyterlab_nodeeditor/model_loader_alpha.ipynb
+package-lock.json
+yarn.lock

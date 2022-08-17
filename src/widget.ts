@@ -8,7 +8,7 @@ import {
 } from 'rete/types/core/data';
 import ConnectionPlugin from 'rete-connection-plugin';
 import ContextMenuPlugin from 'rete-context-menu-plugin';
-import VueRenderPlugin from 'rete-react-render-plugin';
+import VueRenderPlugin from 'rete-vue-render-plugin';
 import {
   DOMWidgetModel,
   DOMWidgetView,

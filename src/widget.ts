@@ -18,6 +18,7 @@ import {
   ManagerBase
 } from '@jupyter-widgets/base';
 import { MODULE_NAME, MODULE_VERSION } from './version';
+import { ReteControlModel } from './controls';
 
 export class ReteSocketCollectionModel extends DOMWidgetModel {
   defaults(): any {
@@ -57,48 +58,6 @@ export class ReteSocketCollectionModel extends DOMWidgetModel {
   static model_name = 'ReteSocketCollectionModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
-}
-
-export class ReteControlModel extends DOMWidgetModel {
-  defaults(): any {
-    return {
-      ...super.defaults(),
-      key: undefined,
-      _model_name: ReteControlModel.model_name,
-      _model_module: ReteControlModel.model_module,
-      _model_module_version: ReteControlModel.model_module_version
-    };
-  }
-
-  async initialize(attributes: any, options: any): Promise<void> {
-    super.initialize(attributes, options);
-    console.log('Hello!', attributes, options);
-  }
-
-  getInstance(): Rete.Control {
-    return new Rete.Control(this.key);
-  }
-
-  key = '';
-  static model_name = 'ReteControlModel';
-  static model_module = MODULE_NAME;
-  static model_module_version = MODULE_VERSION;
-}
-
-export class ReteControlView extends DOMWidgetView {
-  async render(): Promise<void> {
-    super.render();
-    this.div = document.createElement('div');
-    this.divId = 'rete-editor-' + uuid();
-    this.div.setAttribute('id', this.divId);
-    this.el.classList.add('retejseditor');
-    this.el.appendChild(this.div);
-    this.div.innerHTML = 'Hello there!  This is me.';
-    //await this.editor.fromJSON(editorData as any);
-  }
-  div: HTMLDivElement;
-  divId: string;
-  model: ReteControlModel;
 }
 
 abstract class ReteIOModel extends DOMWidgetModel {

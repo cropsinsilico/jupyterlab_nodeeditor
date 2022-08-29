@@ -18,6 +18,7 @@ import {
   ManagerBase
 } from '@jupyter-widgets/base';
 import { MODULE_NAME, MODULE_VERSION } from './version';
+import { ReteControlModel } from './controls';
 
 export class ReteSocketCollectionModel extends DOMWidgetModel {
   defaults(): any {
@@ -221,6 +222,7 @@ export class ReteNodeModel extends DOMWidgetModel {
       type_name: 'DefaultComponent',
       inputs: [],
       outputs: [],
+      controls: [],
       _model_name: ReteNodeModel.model_name,
       _model_module: ReteNodeModel.model_module,
       _model_module_version: ReteNodeModel.model_module_version,
@@ -236,6 +238,7 @@ export class ReteNodeModel extends DOMWidgetModel {
     this.on('change:title', this.changeTitle, this);
     this.on('change:inputs', this.changeInputs, this);
     this.on('change:outputs', this.changeOutputs, this);
+    this.on('change:controls', this.changeControls, this);
   }
 
   changeTitle(): void {
@@ -272,10 +275,26 @@ export class ReteNodeModel extends DOMWidgetModel {
     this._node?.update();
   }
 
+  changeControls(): void {
+    const newControls: ReteControlModel[] = this.get('controls') || [];
+    const oldControls: ReteControlModel[] = this.previous('controls') || [];
+    for (const remEl of oldControls.filter(_ => !newControls.includes(_))) {
+      // These are instances, so we match based on keys
+      this._node?.removeControl(this._node.controls.get(remEl.key));
+    }
+    for (const newEl of newControls.filter(_ => !oldControls.includes(_))) {
+      if (!this._node.controls.has(newEl.getInstance().key)) {
+        this._node?.addControl(newEl.getInstance());
+      }
+    }
+    this._node?.update();
+  }
+
   static serializers: ISerializers = {
     ...DOMWidgetModel.serializers,
     inputs: { deserialize: unpack_models },
-    outputs: { deserialize: unpack_models }
+    outputs: { deserialize: unpack_models },
+    controls: { deserialize: unpack_models }
   };
 
   // the inputs and outputs will need serializers and deserializers
@@ -284,6 +303,7 @@ export class ReteNodeModel extends DOMWidgetModel {
   _node?: Rete.Node;
   inputs: ReteInputModel[] = [];
   outputs: ReteOutputModel[] = [];
+  controls: ReteControlModel[] = [];
   static model_name = 'ReteNodeModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;

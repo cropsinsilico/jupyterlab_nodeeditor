@@ -5,3 +5,4 @@ require('regenerator-runtime/runtime');
 
 export * from './plugin';
 export * from './widget';
+export * from './controls';

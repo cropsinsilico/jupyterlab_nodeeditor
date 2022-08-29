@@ -108,6 +108,16 @@ class Component(ipywidgets.Widget):
 
 
 @ipywidgets.register
+class InputControlModel(ipywidgets.Widget):
+    key = traitlets.Unicode().tag(sync=True)
+    _model_name = traitlets.Unicode("ReteControlModel").tag(sync=True)
+    _model_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
+    _model_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
+    _view_name = traitlets.Unicode("ReteControlView").tag(sync=True)
+    _view_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
+    _view_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
+
+@ipywidgets.register
 class NodeInstanceModel(ipywidgets.Widget):
     _model_name = traitlets.Unicode("ReteNodeModel").tag(sync=True)
     _model_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
@@ -120,6 +130,9 @@ class NodeInstanceModel(ipywidgets.Widget):
     # instances and the other is the name of the component type
     type_name = traitlets.Unicode("DefaultComponent", allow_none=False).tag(sync=True)
     inputs = traitlets.List(InputSlotTrait()).tag(
+        sync=True, **ipywidgets.widget_serialization
+    )
+    controls = traitlets.List(traitlets.Instance(InputControlModel)).tag(
         sync=True, **ipywidgets.widget_serialization
     )
     outputs = traitlets.List(OutputSlotTrait()).tag(

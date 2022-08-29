@@ -3,11 +3,9 @@ require('regenerator-runtime/runtime');
 (window as any).regeneratorRuntime = regeneratorRuntime;
 
 import { IJupyterWidgetRegistry } from '@jupyter-widgets/base';
-import {
-  JupyterFrontEnd,
-  JupyterFrontEndPlugin
-} from '@jupyterlab/application';
+import { JupyterFrontEnd } from '@jupyterlab/application';
 
+import type { JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { MODULE_NAME, MODULE_VERSION } from './version';
 
 import * as nodeeditorExports from './widget';

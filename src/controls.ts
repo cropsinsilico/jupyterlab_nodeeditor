@@ -74,5 +74,5 @@ export class ReteControlView extends DOMWidgetView {
   }
   div: HTMLDivElement;
   divId: string;
-  model: ReteControlModel;
+  declare model: ReteControlModel;
 }

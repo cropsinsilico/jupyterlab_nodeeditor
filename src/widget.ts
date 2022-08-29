@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import * as Rete from 'rete';
-import {
+import type {
   NodeData,
   WorkerInputs,
   WorkerOutputs,
@@ -14,9 +14,9 @@ import {
   DOMWidgetView,
   uuid,
   unpack_models,
-  ISerializers,
   ManagerBase
 } from '@jupyter-widgets/base';
+import type { ISerializers } from '@jupyter-widgets/base';
 import { MODULE_NAME, MODULE_VERSION } from './version';
 import { ReteControlModel } from './controls';
 
@@ -317,7 +317,7 @@ export class ReteNodeView extends DOMWidgetView {
     return;
   }
 
-  model: ReteNodeModel;
+  declare model: ReteNodeModel;
 }
 
 export class ReteEditorModel extends DOMWidgetModel {
@@ -522,7 +522,7 @@ export class ReteEditorView extends DOMWidgetView {
     this.model.save_changes();
   }
 
-  model: ReteEditorModel;
+  declare model: ReteEditorModel;
   div: HTMLDivElement;
   divId: string;
   editor: Rete.NodeEditor;

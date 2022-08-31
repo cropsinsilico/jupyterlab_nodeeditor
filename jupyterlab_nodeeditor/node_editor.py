@@ -64,6 +64,11 @@ class OutputSlot(ipywidgets.Widget):
         sync=True, **ipywidgets.widget_serialization
     )
 
+    def _ipython_display_(self):
+        display(self.widget())
+
+    def widget(self):
+        return ipywidgets.Label(f"Slot {self.key}: {self.title} ({self.socket_type})")
 
 class OutputSlotTrait(traitlets.TraitType):
     default_value = None

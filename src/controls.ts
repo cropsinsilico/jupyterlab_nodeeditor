@@ -3,7 +3,7 @@ import { DOMWidgetModel } from '@jupyter-widgets/base';
 import { MODULE_NAME, MODULE_VERSION } from './version';
 import { DOMWidgetView, uuid } from '@jupyter-widgets/base';
 
-import VueNumControl from './component.vue';
+import { NumberInputControl } from 'nodeeditor-controls';
 
 interface IVueNumControlProps {
   initial: number;
@@ -19,7 +19,7 @@ interface IVueNumControlProps {
 class NumControl extends Rete.Control {
   constructor(emitter: any, key: string, readonly: boolean) {
     super(key);
-    this.component = VueNumControl;
+    this.component = NumberInputControl;
     this.props = { emitter, ikey: key, readonly, initial: 0, type: 'number' };
   }
 

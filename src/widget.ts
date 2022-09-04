@@ -154,6 +154,7 @@ export class ReteComponentModel extends DOMWidgetModel {
     this.title = this.get('title');
     this.inputs = this.get('inputs');
     this.outputs = this.get('outputs');
+    this.controls = this.get('controls');
     this.type_name = this.get('type_name');
     await this.createComponent();
   }
@@ -163,6 +164,7 @@ export class ReteComponentModel extends DOMWidgetModel {
     const title = this.title;
     const inputs = this.inputs;
     const outputs = this.outputs;
+    const controls = this.controls;
     this._rete_component = new (class ThisComponent extends Rete.Component {
       constructor(_title: string) {
         super(title);
@@ -171,11 +173,15 @@ export class ReteComponentModel extends DOMWidgetModel {
         node.meta.componentType = thisTypeName;
         node.meta.inputSlots = inputs;
         node.meta.outputSlots = outputs;
+        node.meta.controls = controls;
         inputs.forEach((e: ReteInputModel) => {
           node.addInput(e.getInstance());
         });
         outputs.forEach((e: ReteOutputModel) => {
           node.addOutput(e.getInstance());
+        });
+        controls.forEach((e: ReteControlModel) => {
+          node.addControl(e.getInstance());
         });
       }
       worker(
@@ -194,7 +200,8 @@ export class ReteComponentModel extends DOMWidgetModel {
     ...DOMWidgetModel.serializers,
     sockets: { deserialize: unpack_models },
     inputs: { deserialize: unpack_models },
-    outputs: { deserialize: unpack_models }
+    outputs: { deserialize: unpack_models },
+    controls: { deserialize: unpack_models }
   };
 
   // the inputs and outputs will need serializers and deserializers
@@ -204,6 +211,7 @@ export class ReteComponentModel extends DOMWidgetModel {
   type_name: string;
   inputs: ReteInputModel[];
   outputs: ReteOutputModel[];
+  controls: ReteControlModel[];
   static model_name = 'ReteComponentModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;

@@ -2,25 +2,33 @@ import * as Rete from 'rete';
 import { DOMWidgetModel } from '@jupyter-widgets/base';
 import { MODULE_NAME, MODULE_VERSION } from './version';
 import { DOMWidgetView, uuid } from '@jupyter-widgets/base';
+import type { EventsTypes } from 'rete/types/events';
+import type { ISerializers } from '@jupyter-widgets/base';
+import { unpack_models } from '@jupyter-widgets/base';
 
 import { NumberInputControl } from 'nodeeditor-controls';
+import { ReteEditorModel } from './widget';
 
 interface IVueNumControlProps {
-  initial: number;
-  readonly: boolean;
-  emitter: any;
+  initialValue: number;
   ikey: string;
-  type: string;
-  change?: (value: number | string) => void;
-  getData?: (ikey: string) => number;
-  putData?: (ikey: string, value: number | string) => void;
+  reteEmitter?: Rete.Emitter<EventsTypes> | undefined;
+  reteGetData?: (ikey: string) => number;
+  retePutData?: (ikey: string, value: number) => void;
 }
 
 class NumControl extends Rete.Control {
-  constructor(emitter: any, key: string, readonly: boolean) {
+  constructor(emitter: Rete.Emitter<EventsTypes>, key: string) {
     super(key);
     this.component = NumberInputControl;
-    this.props = { emitter, ikey: key, readonly, initial: 0, type: 'number' };
+    this.props = {
+      initialValue: 0,
+      ikey: key,
+      reteEmitter: emitter,
+      reteGetData: this.getData as (ikey: string) => number,
+      retePutData: this.putData
+    };
+    (this.data as any).render = 'vue';
   }
 
   setValue(val: number) {
@@ -37,6 +45,7 @@ export abstract class ReteControlModel extends DOMWidgetModel {
     return {
       ...super.defaults(),
       key: undefined,
+      editor: undefined,
       _model_name: ReteControlModel.model_name,
       _model_module: ReteControlModel.model_module,
       _model_module_version: ReteControlModel.model_module_version
@@ -45,34 +54,28 @@ export abstract class ReteControlModel extends DOMWidgetModel {
 
   async initialize(attributes: any, options: any): Promise<void> {
     super.initialize(attributes, options);
+    this.editor = this.get('editor');
   }
 
   abstract getInstance(): Rete.Control;
 
   key = '';
+  editor: ReteEditorModel;
   static model_name = 'ReteControlModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
+
+  static serializers: ISerializers = {
+    ...DOMWidgetModel.serializers,
+    editor: { deserialize: unpack_models }
+  };
 }
 
 export class ReteNumControlModel extends ReteControlModel {
   getInstance(): NumControl {
-    return new NumControl(this, this.key, false);
+    return new NumControl(this.editor.engine, this.key);
   }
-}
-
-export class ReteControlView extends DOMWidgetView {
-  async render(): Promise<void> {
-    super.render();
-    this.div = document.createElement('div');
-    this.divId = 'rete-editor-' + uuid();
-    this.div.setAttribute('id', this.divId);
-    this.el.classList.add('retejseditor');
-    this.el.appendChild(this.div);
-    this.div.innerHTML = 'Hello there!  This is me.';
-    //await this.editor.fromJSON(editorData as any);
-  }
-  div: HTMLDivElement;
-  divId: string;
-  declare model: ReteControlModel;
+  static model_name = 'ReteNumControlModel';
+  static model_module = MODULE_NAME;
+  static model_module_version = MODULE_VERSION;
 }

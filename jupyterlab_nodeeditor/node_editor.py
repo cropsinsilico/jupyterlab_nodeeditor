@@ -80,32 +80,6 @@ class OutputSlotTrait(traitlets.TraitType):
 
 
 @ipywidgets.register
-class Component(ipywidgets.Widget):
-    _model_name = traitlets.Unicode("ReteComponentModel").tag(sync=True)
-    _model_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
-    _model_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
-    title = traitlets.Unicode("Title").tag(sync=True)
-    # We distinguish between name and title because one is displayed on all
-    # instances and the other is the name of the component type
-    type_name = traitlets.Unicode().tag(sync=True)
-    sockets = traitlets.Instance(SocketCollection).tag(
-        sync=True, **ipywidgets.widget_serialization
-    )
-    inputs = traitlets.List(InputSlotTrait()).tag(
-        sync=True, **ipywidgets.widget_serialization
-    )
-    outputs = traitlets.List(OutputSlotTrait()).tag(
-        sync=True, **ipywidgets.widget_serialization
-    )
-
-    @traitlets.default("type_name")
-    def _default_type_name(self):
-        # slugize the title
-        name = "component_" + self.title.replace(" ", "_").lower()
-        return name
-
-
-@ipywidgets.register
 class InputControlModel(ipywidgets.Widget):
     key = traitlets.Unicode().tag(sync=True)
     editor = traitlets.ForwardDeclaredInstance("NodeEditorModel").tag(
@@ -120,6 +94,34 @@ class InputControlModel(ipywidgets.Widget):
 class NumberInputControlModel(InputControlModel):
     _model_name = traitlets.Unicode("ReteNumControlModel").tag(sync=True)
 
+
+@ipywidgets.register
+class Component(ipywidgets.Widget):
+    _model_name = traitlets.Unicode("ReteComponentModel").tag(sync=True)
+    _model_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
+    _model_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
+    title = traitlets.Unicode("Title").tag(sync=True)
+    # We distinguish between name and title because one is displayed on all
+    # instances and the other is the name of the component type
+    type_name = traitlets.Unicode().tag(sync=True)
+    sockets = traitlets.Instance(SocketCollection).tag(
+        sync=True, **ipywidgets.widget_serialization
+    )
+    inputs = traitlets.List(InputSlotTrait()).tag(
+        sync=True, **ipywidgets.widget_serialization
+    )
+    controls = traitlets.List(traitlets.Instance(InputControlModel)).tag(
+        sync=True, **ipywidgets.widget_serialization
+    )
+    outputs = traitlets.List(OutputSlotTrait()).tag(
+        sync=True, **ipywidgets.widget_serialization
+    )
+
+    @traitlets.default("type_name")
+    def _default_type_name(self):
+        # slugize the title
+        name = "component_" + self.title.replace(" ", "_").lower()
+        return name
 
 @ipywidgets.register
 class NodeInstanceModel(ipywidgets.Widget):

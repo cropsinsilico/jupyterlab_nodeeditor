@@ -75,9 +75,7 @@ export class ReteControlModel extends DOMWidgetModel {
 
 export class ReteNumControlModel extends ReteControlModel {
   getInstance(): NumControl {
-    console.log('Getting instance');
     return new NumControl(this.editor.engine, this.key);
-    console.log('Got the instance.');
   }
   static model_name = 'ReteNumControlModel';
   static model_module = MODULE_NAME;

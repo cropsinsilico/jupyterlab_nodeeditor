@@ -439,7 +439,6 @@ export class ReteEditorView extends DOMWidgetView {
 
   addNewComponent(): void {
     const components: ReteComponentModel[] = this.model.get('_components');
-    console.log(components);
     components.forEach(v => {
       if (this.editor.components.get(v.title) === undefined) {
         this.editor.register(v._rete_component);
@@ -461,7 +460,6 @@ export class ReteEditorView extends DOMWidgetView {
     });
     this.editor.on(['nodeselected'], async (node: Rete.Node) => {
       // Figure out which NodeModel it corresponds to
-      console.log('selected', node.meta.nodeModel);
       this.model.set('selected_node', node.meta.nodeModel);
       this.model.save_changes();
     });
@@ -485,13 +483,11 @@ export class ReteEditorView extends DOMWidgetView {
   async updateNodes(model: ReteEditorModel): Promise<void> {
     const oldNodes: ReteNodeModel[] = model.previous('nodes');
     const newNodes: ReteNodeModel[] = model.get('nodes');
-    console.log('oldNodes', this.divId, oldNodes);
     for (const remNode of oldNodes.filter(_ => !newNodes.includes(_))) {
       // These are instances, so we match based on keys
       this.editor.removeNode(remNode._node);
     }
     for (const newNode of newNodes.filter(_ => !oldNodes.includes(_))) {
-      console.log('newnode', this.divId, newNode);
       if (newNode._node === undefined) {
         newNode._node = new Rete.Node(newNode.get('type_name'));
         newNode._node.meta.nodeModel = newNode;
@@ -501,7 +497,6 @@ export class ReteEditorView extends DOMWidgetView {
       if (!this.editor.nodes.includes(newNode._node)) {
         this.editor.addNode(newNode._node);
       }
-      console.log(this.divId, newNode._node);
     }
   }
 

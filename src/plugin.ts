@@ -8,7 +8,7 @@ import { JupyterFrontEnd } from '@jupyterlab/application';
 import type { JupyterFrontEndPlugin } from '@jupyterlab/application';
 import { MODULE_NAME, MODULE_VERSION } from './version';
 
-import * as nodeeditorExports from './widget';
+import * as nodeeditorExports from './widgetexports';
 
 /**
  * Initialization data for the jupyterlab_nodeeditor extension.

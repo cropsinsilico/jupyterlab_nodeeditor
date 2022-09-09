@@ -1,7 +1,6 @@
 import * as Rete from 'rete';
 import { DOMWidgetModel } from '@jupyter-widgets/base';
 import { MODULE_NAME, MODULE_VERSION } from './version';
-import { DOMWidgetView, uuid } from '@jupyter-widgets/base';
 import type { EventsTypes } from 'rete/types/events';
 import type { ISerializers } from '@jupyter-widgets/base';
 import { unpack_models } from '@jupyter-widgets/base';
@@ -40,7 +39,7 @@ class NumControl extends Rete.Control {
   props: IVueNumControlProps;
 }
 
-export abstract class ReteControlModel extends DOMWidgetModel {
+export class ReteControlModel extends DOMWidgetModel {
   defaults(): any {
     return {
       ...super.defaults(),
@@ -54,12 +53,15 @@ export abstract class ReteControlModel extends DOMWidgetModel {
 
   async initialize(attributes: any, options: any): Promise<void> {
     super.initialize(attributes, options);
+    this.key = this.get('key');
     this.editor = this.get('editor');
   }
 
-  abstract getInstance(): Rete.Control;
+  getInstance(): Rete.Control {
+    return undefined;
+  }
 
-  key = '';
+  key: string;
   editor: ReteEditorModel;
   static model_name = 'ReteControlModel';
   static model_module = MODULE_NAME;

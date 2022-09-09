@@ -24,8 +24,8 @@ class NumControl extends Rete.Control {
       initialValue: 0,
       ikey: key,
       reteEmitter: emitter,
-      reteGetData: this.getData as (ikey: string) => number,
-      retePutData: this.putData
+      reteGetData: this.getData.bind(this) as (ikey: string) => number,
+      retePutData: this.putData.bind(this)
     };
     (this.data as any).render = 'vue';
   }

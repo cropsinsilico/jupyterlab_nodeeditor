@@ -94,6 +94,12 @@
       }
     },
     "extension": "lib/plugin",
-    "outputDir": "jupyterlab_nodeeditor/labextension"
+    "outputDir": "jupyterlab_nodeeditor/labextension",
+    "sharedPackages": {
+      "@jupyter-widgets/base": {
+        "bundled": false,
+        "singleton": true
+      }
+    }
   }
 }

@@ -488,6 +488,7 @@ export class ReteEditorView extends DOMWidgetView {
         newNode._node.meta.nodeModel = newNode;
         newNode.changeInputs();
         newNode.changeOutputs();
+        newNode.changeControls();
       }
       if (!this.editor.nodes.includes(newNode._node)) {
         this.editor.addNode(newNode._node);
@@ -516,6 +517,7 @@ export class ReteEditorView extends DOMWidgetView {
     newNode.set('title', node.name);
     newNode.set('inputs', node.meta.inputSlots || []);
     newNode.set('outputs', node.meta.outputSlots || []);
+    newNode.set('controls', node.meta.controls || []);
     newNode.save_changes();
     node.meta.nodeModel = newNode;
     const newNodes: ReteNodeModel[] = (

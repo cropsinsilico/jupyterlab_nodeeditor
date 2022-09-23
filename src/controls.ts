@@ -5,9 +5,11 @@ import type { EventsTypes } from 'rete/types/events';
 import type { ISerializers } from '@jupyter-widgets/base';
 import { unpack_models } from '@jupyter-widgets/base';
 
-import { NumberInputControl } from 'nodeeditor-controls';
-import { DropDownInputControl } from 'nodeeditor-controls';
-import { TextInputControl } from 'nodeeditor-controls';
+import {
+  NumberInputControl,
+  DropDownInputControl,
+  TextInputControl
+} from 'nodeeditor-controls';
 import { ReteEditorModel } from './widget';
 
 //numcontrol

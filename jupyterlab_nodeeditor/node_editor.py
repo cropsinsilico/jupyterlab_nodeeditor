@@ -94,9 +94,9 @@ class InputControlModel(ipywidgets.Widget):
     _model_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
 
 
-# @ipywidgets.register
-# class NumberInputControlModel(InputControlModel):
-#     _model_name = traitlets.Unicode("ReteTextControlModel").tag(sync=True)
+@ipywidgets.register
+class NumberInputControlModel(InputControlModel):
+    _model_name = traitlets.Unicode("ReteTextControlModel").tag(sync=True)
 
 
 @ipywidgets.register

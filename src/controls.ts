@@ -78,7 +78,6 @@ class TextControl extends Rete.Control {
 
 //dropdowncontrol
 interface IVueDropDownControlProps {
-  initialValue: string;
   ikey: string;
   reteEmitter?: Rete.Emitter<EventsTypes> | undefined;
   reteGetData?: (ikey: string) => number;
@@ -90,7 +89,6 @@ class DropDownControl extends Rete.Control {
     super(key);
     this.component = DropDownInputControl;
     this.props = {
-      initialValue: '',
       ikey: key,
       reteEmitter: emitter,
       reteGetData: this.getData.bind(this) as (ikey: string) => number,

@@ -87,14 +87,16 @@ class InputControlModel(ipywidgets.Widget):
     editor = traitlets.ForwardDeclaredInstance("NodeEditorModel").tag(
         sync=True, **ipywidgets.widget_serialization
     )
-    _model_name = traitlets.Unicode("ReteNumControlModel").tag(sync=True)
+    # _model_name = traitlets.Unicode("ReteNumControlModel").tag(sync=True)
+    # _model_name = traitlets.Unicode("ReteTextControlModel").tag(sync=True)
+    _model_name = traitlets.Unicode("ReteDropDownControlModel").tag(sync=True)
     _model_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
     _model_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
 
 
-@ipywidgets.register
-class NumberInputControlModel(InputControlModel):
-    _model_name = traitlets.Unicode("ReteNumControlModel").tag(sync=True)
+# @ipywidgets.register
+# class NumberInputControlModel(InputControlModel):
+#     _model_name = traitlets.Unicode("ReteTextControlModel").tag(sync=True)
 
 
 @ipywidgets.register
@@ -124,6 +126,7 @@ class Component(ipywidgets.Widget):
         # slugize the title
         name = "component_" + self.title.replace(" ", "_").lower()
         return name
+
 
 @ipywidgets.register
 class NodeInstanceModel(ipywidgets.Widget):

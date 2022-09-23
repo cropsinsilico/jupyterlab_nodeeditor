@@ -6,8 +6,11 @@ import type { ISerializers } from '@jupyter-widgets/base';
 import { unpack_models } from '@jupyter-widgets/base';
 
 import { NumberInputControl } from 'nodeeditor-controls';
+import { DropDownInputControl } from 'nodeeditor-controls';
+import { TextInputControl } from 'nodeeditor-controls';
 import { ReteEditorModel } from './widget';
 
+//numcontrol
 interface IVueNumControlProps {
   initialValue: number;
   ikey: string;
@@ -37,6 +40,70 @@ class NumControl extends Rete.Control {
   component: any;
   vueContext: any;
   props: IVueNumControlProps;
+}
+
+//textcontrol
+interface IVueTextControlProps {
+  initialValue: string;
+  ikey: string;
+  reteEmitter?: Rete.Emitter<EventsTypes> | undefined;
+  reteGetData?: (ikey: string) => number;
+  retePutData?: (ikey: string, value: number) => void;
+}
+
+class TextControl extends Rete.Control {
+  constructor(emitter: Rete.Emitter<EventsTypes>, key: string) {
+    super(key);
+    this.component = TextInputControl;
+    this.props = {
+      initialValue: '',
+      ikey: key,
+      reteEmitter: emitter,
+      reteGetData: this.getData.bind(this) as (ikey: string) => number,
+      retePutData: this.putData.bind(this)
+    };
+    (this.data as any).render = 'vue';
+  }
+
+  setValue(val: number) {
+    this.vueContext.value = val;
+  }
+
+  component: any;
+  vueContext: any;
+  props: IVueTextControlProps;
+}
+
+//dropdowncontrol
+interface IVueDropDownControlProps {
+  initialValue: string;
+  ikey: string;
+  reteEmitter?: Rete.Emitter<EventsTypes> | undefined;
+  reteGetData?: (ikey: string) => number;
+  retePutData?: (ikey: string, value: number) => void;
+}
+
+class DropDownControl extends Rete.Control {
+  constructor(emitter: Rete.Emitter<EventsTypes>, key: string) {
+    super(key);
+    this.component = DropDownInputControl;
+    this.props = {
+      initialValue: '',
+      ikey: key,
+      reteEmitter: emitter,
+      reteGetData: this.getData.bind(this) as (ikey: string) => number,
+      retePutData: this.putData.bind(this)
+    };
+    (this.data as any).render = 'vue';
+  }
+
+  setValue(val: number) {
+    this.vueContext.value = val;
+  }
+
+  component: any;
+  vueContext: any;
+  props: IVueDropDownControlProps;
 }
 
 export class ReteControlModel extends DOMWidgetModel {
@@ -78,6 +145,24 @@ export class ReteNumControlModel extends ReteControlModel {
     return new NumControl(this.editor.engine, this.key);
   }
   static model_name = 'ReteNumControlModel';
+  static model_module = MODULE_NAME;
+  static model_module_version = MODULE_VERSION;
+}
+
+export class ReteTextControlModel extends ReteControlModel {
+  getInstance(): TextControl {
+    return new TextControl(this.editor.engine, this.key);
+  }
+  static model_name = 'ReteTextControlModel';
+  static model_module = MODULE_NAME;
+  static model_module_version = MODULE_VERSION;
+}
+
+export class ReteDropDownControlModel extends ReteControlModel {
+  getInstance(): DropDownControl {
+    return new DropDownControl(this.editor.engine, this.key);
+  }
+  static model_name = 'ReteDropDownControlModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
 }

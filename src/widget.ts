@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import * as Rete from 'rete';
-import {
+import type {
   NodeData,
   WorkerInputs,
   WorkerOutputs,
@@ -14,10 +14,11 @@ import {
   DOMWidgetView,
   uuid,
   unpack_models,
-  ISerializers,
   ManagerBase
 } from '@jupyter-widgets/base';
+import type { ISerializers } from '@jupyter-widgets/base';
 import { MODULE_NAME, MODULE_VERSION } from './version';
+import { ReteControlModel } from './controls';
 
 export class ReteSocketCollectionModel extends DOMWidgetModel {
   defaults(): any {
@@ -153,6 +154,7 @@ export class ReteComponentModel extends DOMWidgetModel {
     this.title = this.get('title');
     this.inputs = this.get('inputs');
     this.outputs = this.get('outputs');
+    this.controls = this.get('controls');
     this.type_name = this.get('type_name');
     await this.createComponent();
   }
@@ -162,6 +164,7 @@ export class ReteComponentModel extends DOMWidgetModel {
     const title = this.title;
     const inputs = this.inputs;
     const outputs = this.outputs;
+    const controls = this.controls;
     this._rete_component = new (class ThisComponent extends Rete.Component {
       constructor(_title: string) {
         super(title);
@@ -170,11 +173,15 @@ export class ReteComponentModel extends DOMWidgetModel {
         node.meta.componentType = thisTypeName;
         node.meta.inputSlots = inputs;
         node.meta.outputSlots = outputs;
+        node.meta.controls = controls;
         inputs.forEach((e: ReteInputModel) => {
           node.addInput(e.getInstance());
         });
         outputs.forEach((e: ReteOutputModel) => {
           node.addOutput(e.getInstance());
+        });
+        controls.forEach((e: ReteControlModel) => {
+          node.addControl(e.getInstance());
         });
       }
       worker(
@@ -193,7 +200,8 @@ export class ReteComponentModel extends DOMWidgetModel {
     ...DOMWidgetModel.serializers,
     sockets: { deserialize: unpack_models },
     inputs: { deserialize: unpack_models },
-    outputs: { deserialize: unpack_models }
+    outputs: { deserialize: unpack_models },
+    controls: { deserialize: unpack_models }
   };
 
   // the inputs and outputs will need serializers and deserializers
@@ -203,6 +211,7 @@ export class ReteComponentModel extends DOMWidgetModel {
   type_name: string;
   inputs: ReteInputModel[];
   outputs: ReteOutputModel[];
+  controls: ReteControlModel[];
   static model_name = 'ReteComponentModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
@@ -216,6 +225,7 @@ export class ReteNodeModel extends DOMWidgetModel {
       type_name: 'DefaultComponent',
       inputs: [],
       outputs: [],
+      controls: [],
       _model_name: ReteNodeModel.model_name,
       _model_module: ReteNodeModel.model_module,
       _model_module_version: ReteNodeModel.model_module_version,
@@ -231,6 +241,7 @@ export class ReteNodeModel extends DOMWidgetModel {
     this.on('change:title', this.changeTitle, this);
     this.on('change:inputs', this.changeInputs, this);
     this.on('change:outputs', this.changeOutputs, this);
+    this.on('change:controls', this.changeControls, this);
   }
 
   changeTitle(): void {
@@ -267,10 +278,26 @@ export class ReteNodeModel extends DOMWidgetModel {
     this._node?.update();
   }
 
+  changeControls(): void {
+    const newControls: ReteControlModel[] = this.get('controls') || [];
+    const oldControls: ReteControlModel[] = this.previous('controls') || [];
+    for (const remEl of oldControls.filter(_ => !newControls.includes(_))) {
+      // These are instances, so we match based on keys
+      this._node?.removeControl(this._node.controls.get(remEl.key));
+    }
+    for (const newEl of newControls.filter(_ => !oldControls.includes(_))) {
+      if (!this._node.controls.has(newEl.getInstance().key)) {
+        this._node?.addControl(newEl.getInstance());
+      }
+    }
+    this._node?.update();
+  }
+
   static serializers: ISerializers = {
     ...DOMWidgetModel.serializers,
     inputs: { deserialize: unpack_models },
-    outputs: { deserialize: unpack_models }
+    outputs: { deserialize: unpack_models },
+    controls: { deserialize: unpack_models }
   };
 
   // the inputs and outputs will need serializers and deserializers
@@ -279,6 +306,7 @@ export class ReteNodeModel extends DOMWidgetModel {
   _node?: Rete.Node;
   inputs: ReteInputModel[] = [];
   outputs: ReteOutputModel[] = [];
+  controls: ReteControlModel[] = [];
   static model_name = 'ReteNodeModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
@@ -297,7 +325,7 @@ export class ReteNodeView extends DOMWidgetView {
     return;
   }
 
-  model: ReteNodeModel;
+  declare model: ReteNodeModel;
 }
 
 export class ReteEditorModel extends DOMWidgetModel {
@@ -406,7 +434,6 @@ export class ReteEditorView extends DOMWidgetView {
 
   addNewComponent(): void {
     const components: ReteComponentModel[] = this.model.get('_components');
-    console.log(components);
     components.forEach(v => {
       if (this.editor.components.get(v.title) === undefined) {
         this.editor.register(v._rete_component);
@@ -428,7 +455,6 @@ export class ReteEditorView extends DOMWidgetView {
     });
     this.editor.on(['nodeselected'], async (node: Rete.Node) => {
       // Figure out which NodeModel it corresponds to
-      console.log('selected', node.meta.nodeModel);
       this.model.set('selected_node', node.meta.nodeModel);
       this.model.save_changes();
     });
@@ -452,23 +478,21 @@ export class ReteEditorView extends DOMWidgetView {
   async updateNodes(model: ReteEditorModel): Promise<void> {
     const oldNodes: ReteNodeModel[] = model.previous('nodes');
     const newNodes: ReteNodeModel[] = model.get('nodes');
-    console.log('oldNodes', this.divId, oldNodes);
     for (const remNode of oldNodes.filter(_ => !newNodes.includes(_))) {
       // These are instances, so we match based on keys
       this.editor.removeNode(remNode._node);
     }
     for (const newNode of newNodes.filter(_ => !oldNodes.includes(_))) {
-      console.log('newnode', this.divId, newNode);
       if (newNode._node === undefined) {
         newNode._node = new Rete.Node(newNode.get('type_name'));
         newNode._node.meta.nodeModel = newNode;
         newNode.changeInputs();
         newNode.changeOutputs();
+        newNode.changeControls();
       }
       if (!this.editor.nodes.includes(newNode._node)) {
         this.editor.addNode(newNode._node);
       }
-      console.log(this.divId, newNode._node);
     }
   }
 
@@ -493,6 +517,7 @@ export class ReteEditorView extends DOMWidgetView {
     newNode.set('title', node.name);
     newNode.set('inputs', node.meta.inputSlots || []);
     newNode.set('outputs', node.meta.outputSlots || []);
+    newNode.set('controls', node.meta.controls || []);
     newNode.save_changes();
     node.meta.nodeModel = newNode;
     const newNodes: ReteNodeModel[] = (
@@ -502,7 +527,7 @@ export class ReteEditorView extends DOMWidgetView {
     this.model.save_changes();
   }
 
-  model: ReteEditorModel;
+  declare model: ReteEditorModel;
   div: HTMLDivElement;
   divId: string;
   editor: Rete.NodeEditor;

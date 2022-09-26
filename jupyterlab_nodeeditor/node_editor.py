@@ -81,17 +81,24 @@ class OutputSlotTrait(traitlets.TraitType):
         return new_obj
 
 
-@ipywidgets.register
+# We don't register this, as it is the base class.
 class InputControlModel(ipywidgets.Widget):
     key = traitlets.Unicode().tag(sync=True)
     editor = traitlets.ForwardDeclaredInstance("NodeEditorModel").tag(
         sync=True, **ipywidgets.widget_serialization
     )
-    # _model_name = traitlets.Unicode("ReteNumControlModel").tag(sync=True)
-    # _model_name = traitlets.Unicode("ReteTextControlModel").tag(sync=True)
-    _model_name = traitlets.Unicode("ReteDropDownControlModel").tag(sync=True)
     _model_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
     _model_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
+
+
+@ipywidgets.register
+class DropDownInputControlModel(InputControlModel):
+    _model_name = traitlets.Unicode("ReteDropDownControlModel").tag(sync=True)
+    options = traitlets.List(
+        trait=traitlets.Dict(
+            value_trait=traitlets.Unicode(), key_trait=traitlets.Unicode()
+        )
+    ).tag(sync=True)
 
 
 @ipywidgets.register

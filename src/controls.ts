@@ -12,6 +12,10 @@ import {
 } from 'nodeeditor-controls';
 import { ReteEditorModel } from './widget';
 
+type DropDownOption = {
+  text: string;
+  value: string;
+};
 //numcontrol
 interface IVueNumControlProps {
   initialValue: number;
@@ -79,19 +83,24 @@ class TextControl extends Rete.Control {
 //dropdowncontrol
 interface IVueDropDownControlProps {
   ikey: string;
-  options?: { text: string; value: string }[];
+  options?: DropDownOption[];
   reteEmitter?: Rete.Emitter<EventsTypes> | undefined;
   reteGetData?: (ikey: string) => number;
   retePutData?: (ikey: string, value: number) => void;
 }
 
 class DropDownControl extends Rete.Control {
-  constructor(emitter: Rete.Emitter<EventsTypes>, key: string) {
+  constructor(
+    emitter: Rete.Emitter<EventsTypes>,
+    key: string,
+    options?: DropDownOption[]
+  ) {
     super(key);
     this.component = DropDownInputControl;
     this.props = {
       ikey: key,
       reteEmitter: emitter,
+      options: options || undefined,
       reteGetData: this.getData.bind(this) as (ikey: string) => number,
       retePutData: this.putData.bind(this)
     };
@@ -160,9 +169,25 @@ export class ReteTextControlModel extends ReteControlModel {
 }
 
 export class ReteDropDownControlModel extends ReteControlModel {
-  getInstance(): DropDownControl {
-    return new DropDownControl(this.editor.engine, this.key);
+  defaults(): any {
+    return {
+      ...super.defaults(),
+      options: []
+    };
   }
+  async initialize(attributes: any, options: any): Promise<void> {
+    super.initialize(attributes, options);
+    this.options = this.get('options');
+    console.log('Options!', this.options);
+    if (this.options.length === 0) {
+      this.options = undefined;
+    }
+    this.editor = this.get('editor');
+  }
+  getInstance(): DropDownControl {
+    return new DropDownControl(this.editor.engine, this.key, this.options);
+  }
+  options: DropDownOption[] | undefined;
   static model_name = 'ReteDropDownControlModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;

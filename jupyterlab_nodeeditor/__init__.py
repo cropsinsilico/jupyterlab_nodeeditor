@@ -42,6 +42,6 @@ from .node_editor import (
     NodeEditorModel,
     OutputSlot,
     SocketCollection,
-    InputControlModel,
+    DropDownInputControlModel,
     NumberInputControlModel,
 )

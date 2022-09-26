@@ -79,6 +79,7 @@ class TextControl extends Rete.Control {
 //dropdowncontrol
 interface IVueDropDownControlProps {
   ikey: string;
+  options?: { text: string; value: string }[];
   reteEmitter?: Rete.Emitter<EventsTypes> | undefined;
   reteGetData?: (ikey: string) => number;
   retePutData?: (ikey: string, value: number) => void;

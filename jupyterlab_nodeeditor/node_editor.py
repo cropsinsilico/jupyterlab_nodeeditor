@@ -66,11 +66,6 @@ class OutputSlot(ipywidgets.Widget):
         sync=True, **ipywidgets.widget_serialization
     )
 
-    def _ipython_display_(self):
-        display(self.widget())
-
-    def widget(self):
-        return ipywidgets.Label(f"Slot {self.key}: {self.title} ({self.socket_type})")
 
 class OutputSlotTrait(traitlets.TraitType):
     default_value = None
@@ -86,20 +81,34 @@ class OutputSlotTrait(traitlets.TraitType):
         return new_obj
 
 
-@ipywidgets.register
+# We don't register this, as it is the base class.
 class InputControlModel(ipywidgets.Widget):
     key = traitlets.Unicode().tag(sync=True)
     editor = traitlets.ForwardDeclaredInstance("NodeEditorModel").tag(
         sync=True, **ipywidgets.widget_serialization
     )
-    _model_name = traitlets.Unicode("ReteNumControlModel").tag(sync=True)
     _model_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
     _model_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
 
 
 @ipywidgets.register
+class DropDownInputControlModel(InputControlModel):
+    _model_name = traitlets.Unicode("ReteDropDownControlModel").tag(sync=True)
+    options = traitlets.List(
+        trait=traitlets.Dict(
+            value_trait=traitlets.Unicode(), key_trait=traitlets.Unicode()
+        )
+    ).tag(sync=True)
+
+
+@ipywidgets.register
 class NumberInputControlModel(InputControlModel):
     _model_name = traitlets.Unicode("ReteNumControlModel").tag(sync=True)
+
+
+@ipywidgets.register
+class TextInputControlModel(InputControlModel):
+    _model_name = traitlets.Unicode("ReteTextControlModel").tag(sync=True)
 
 
 @ipywidgets.register
@@ -129,6 +138,7 @@ class Component(ipywidgets.Widget):
         # slugize the title
         name = "component_" + self.title.replace(" ", "_").lower()
         return name
+
 
 @ipywidgets.register
 class NodeInstanceModel(ipywidgets.Widget):

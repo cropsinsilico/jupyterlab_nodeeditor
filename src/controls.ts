@@ -26,16 +26,21 @@ interface IVueNumControlProps {
 }
 
 class NumControl extends Rete.Control {
-  constructor(emitter: Rete.Emitter<EventsTypes>, key: string) {
+  constructor(
+    emitter: Rete.Emitter<EventsTypes>,
+    key: string,
+    initialValue = 0
+  ) {
     super(key);
     this.component = NumberInputControl;
     this.props = {
-      initialValue: 0,
+      initialValue: initialValue,
       ikey: key,
       reteEmitter: emitter,
       reteGetData: this.getData.bind(this) as (ikey: string) => number,
       retePutData: this.putData.bind(this)
     };
+    console.log('this is a:', initialValue);
     (this.data as any).render = 'vue';
   }
 
@@ -151,9 +156,22 @@ export class ReteControlModel extends DOMWidgetModel {
 }
 
 export class ReteNumControlModel extends ReteControlModel {
-  getInstance(): NumControl {
-    return new NumControl(this.editor.engine, this.key);
+  defaults(): any {
+    return {
+      ...super.defaults(),
+      initialValue: 0
+    };
   }
+
+  async initialize(attributes: any, options: any): Promise<void> {
+    super.initialize(attributes, options);
+    this.initialValue = this.get('initial_value');
+  }
+
+  getInstance(): NumControl {
+    return new NumControl(this.editor.engine, this.key, this.initialValue);
+  }
+  initialValue: number | undefined;
   static model_name = 'ReteNumControlModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;

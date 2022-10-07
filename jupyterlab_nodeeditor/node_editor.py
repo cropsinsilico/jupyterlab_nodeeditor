@@ -72,6 +72,7 @@ class OutputSlot(ipywidgets.Widget):
     def widget(self):
         return ipywidgets.Label(f"Slot {self.key}: {self.title} ({self.socket_type})")
 
+
 class OutputSlotTrait(traitlets.TraitType):
     default_value = None
     info_text = "A slot type"
@@ -109,6 +110,7 @@ class DropDownInputControlModel(InputControlModel):
 @ipywidgets.register
 class NumberInputControlModel(InputControlModel):
     _model_name = traitlets.Unicode("ReteTextControlModel").tag(sync=True)
+    initial_value = traitlets.CInt().tag(sync=True)
 
 
 @ipywidgets.register

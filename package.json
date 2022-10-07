@@ -59,7 +59,8 @@
     "rete-connection-plugin": "^0.9.0",
     "rete-context-menu-plugin": "^0.6.0-rc.1",
     "rete-stage0-render-plugin": "^0.2.14",
-    "rete-vue-render-plugin": "^1.0.0-rc2"
+    "rete-vue-render-plugin": "^1.0.0-rc2",
+    "vue": "3.2.38"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^3.4.5",

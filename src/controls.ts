@@ -11,26 +11,34 @@ import {
   TextInputControl
 } from 'nodeeditor-controls';
 import { ReteEditorModel } from './widget';
+import { type } from 'os';
 
 type DropDownOption = {
   text: string;
   value: string;
 };
+
+type DefaultNum = number;
+
 //numcontrol
 interface IVueNumControlProps {
-  initialValue: number;
   ikey: string;
+  initialValue?: DefaultNum;
   reteEmitter?: Rete.Emitter<EventsTypes> | undefined;
   reteGetData?: (ikey: string) => number;
   retePutData?: (ikey: string, value: number) => void;
 }
 
 class NumControl extends Rete.Control {
-  constructor(emitter: Rete.Emitter<EventsTypes>, key: string) {
+  constructor(
+    emitter: Rete.Emitter<EventsTypes>,
+    key: string,
+    initialValue?: DefaultNum
+  ) {
     super(key);
     this.component = NumberInputControl;
     this.props = {
-      initialValue: 0,
+      initialValue: initialValue || 0,
       ikey: key,
       reteEmitter: emitter,
       reteGetData: this.getData.bind(this) as (ikey: string) => number,
@@ -151,9 +159,22 @@ export class ReteControlModel extends DOMWidgetModel {
 }
 
 export class ReteNumControlModel extends ReteControlModel {
-  getInstance(): NumControl {
-    return new NumControl(this.editor.engine, this.key);
+  defaults(): any {
+    return {
+      ...super.defaults(),
+      initialValue: []
+    };
   }
+  async initialize(attributes: any, options: any): Promise<void> {
+    super.initialize(attributes, options);
+    this.initialValue = this.get('initialValue');
+    console.log('initialValue!', this.initialValue);
+    this.editor = this.get('editor');
+  }
+  getInstance(): NumControl {
+    return new NumControl(this.editor.engine, this.key, this.initialValue);
+  }
+  initialValue: DefaultNum | undefined;
   static model_name = 'ReteNumControlModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;

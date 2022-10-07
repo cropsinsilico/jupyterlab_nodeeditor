@@ -104,6 +104,7 @@ class DropDownInputControlModel(InputControlModel):
 @ipywidgets.register
 class NumberInputControlModel(InputControlModel):
     _model_name = traitlets.Unicode("ReteNumControlModel").tag(sync=True)
+    initialValue = traitlets.Int().tag(sync=True)
 
 
 @ipywidgets.register

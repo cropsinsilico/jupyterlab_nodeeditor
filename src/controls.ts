@@ -11,14 +11,13 @@ import {
   TextInputControl
 } from 'nodeeditor-controls';
 import { ReteEditorModel } from './widget';
-
 type DropDownOption = {
   text: string;
   value: string;
 };
 //numcontrol
 interface IVueNumControlProps {
-  initialValue: number;
+  initialValue?: number;
   ikey: string;
   reteEmitter?: Rete.Emitter<EventsTypes> | undefined;
   reteGetData?: (ikey: string) => number;
@@ -29,21 +28,20 @@ class NumControl extends Rete.Control {
   constructor(
     emitter: Rete.Emitter<EventsTypes>,
     key: string,
-    initialValue = 0
+    initialValue: number
   ) {
     super(key);
     this.component = NumberInputControl;
     this.props = {
-      initialValue: initialValue,
+      initialValue: initialValue || undefined,
       ikey: key,
       reteEmitter: emitter,
       reteGetData: this.getData.bind(this) as (ikey: string) => number,
       retePutData: this.putData.bind(this)
     };
-    console.log('this is a:', initialValue);
+
     (this.data as any).render = 'vue';
   }
-
   setValue(val: number) {
     this.vueContext.value = val;
   }
@@ -166,6 +164,7 @@ export class ReteNumControlModel extends ReteControlModel {
   async initialize(attributes: any, options: any): Promise<void> {
     super.initialize(attributes, options);
     this.initialValue = this.get('initial_value');
+    console.log('this is a:', this.initialValue);
   }
 
   getInstance(): NumControl {

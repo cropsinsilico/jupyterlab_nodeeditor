@@ -109,7 +109,7 @@ class DropDownInputControlModel(InputControlModel):
 
 @ipywidgets.register
 class NumberInputControlModel(InputControlModel):
-    _model_name = traitlets.Unicode("ReteTextControlModel").tag(sync=True)
+    _model_name = traitlets.Unicode("ReteNumControlModel").tag(sync=True)
     initial_value = traitlets.CInt().tag(sync=True)
 
 

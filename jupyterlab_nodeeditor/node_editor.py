@@ -114,6 +114,12 @@ class NumberInputControlModel(InputControlModel):
 
 
 @ipywidgets.register
+class TextInputControlModel(InputControlModel):
+    _model_name = traitlets.Unicode("ReteTextControlModel").tag(sync=True)
+    initial_value = traitlets.Unicode().tag(sync=True)
+
+
+@ipywidgets.register
 class Component(ipywidgets.Widget):
     _model_name = traitlets.Unicode("ReteComponentModel").tag(sync=True)
     _model_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)

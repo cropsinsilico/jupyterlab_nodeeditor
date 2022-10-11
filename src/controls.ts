@@ -53,7 +53,7 @@ class NumControl extends Rete.Control {
 
 //textcontrol
 interface IVueTextControlProps {
-  initialValue: string;
+  initialValue?: string;
   ikey: string;
   reteEmitter?: Rete.Emitter<EventsTypes> | undefined;
   reteGetData?: (ikey: string) => number;
@@ -61,11 +61,15 @@ interface IVueTextControlProps {
 }
 
 class TextControl extends Rete.Control {
-  constructor(emitter: Rete.Emitter<EventsTypes>, key: string) {
+  constructor(
+    emitter: Rete.Emitter<EventsTypes>,
+    key: string,
+    initialValue: string
+  ) {
     super(key);
     this.component = TextInputControl;
     this.props = {
-      initialValue: '',
+      initialValue: initialValue || undefined,
       ikey: key,
       reteEmitter: emitter,
       reteGetData: this.getData.bind(this) as (ikey: string) => number,
@@ -164,7 +168,7 @@ export class ReteNumControlModel extends ReteControlModel {
   async initialize(attributes: any, options: any): Promise<void> {
     super.initialize(attributes, options);
     this.initialValue = this.get('initial_value');
-    console.log('this is a:', this.initialValue);
+    // console.log('this is a:', this.initialValue);
   }
 
   getInstance(): NumControl {
@@ -177,9 +181,21 @@ export class ReteNumControlModel extends ReteControlModel {
 }
 
 export class ReteTextControlModel extends ReteControlModel {
-  getInstance(): TextControl {
-    return new TextControl(this.editor.engine, this.key);
+  defaults(): any {
+    return {
+      ...super.defaults(),
+      initialValue: ""
+    };
   }
+  async initialize(attributes: any, options: any): Promise<void> {
+    super.initialize(attributes, options);
+    this.initialValue = this.get('initial_value');
+    // console.log('this is a:', this.initialValue);
+  }
+  getInstance(): TextControl {
+    return new TextControl(this.editor.engine, this.key, this.initialValue);
+  }
+  initialValue: string | undefined;
   static model_name = 'ReteTextControlModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
@@ -195,7 +211,7 @@ export class ReteDropDownControlModel extends ReteControlModel {
   async initialize(attributes: any, options: any): Promise<void> {
     super.initialize(attributes, options);
     this.options = this.get('options');
-    console.log('Options!', this.options);
+    // console.log('Options!', this.options);
     if (this.options.length === 0) {
       this.options = undefined;
     }

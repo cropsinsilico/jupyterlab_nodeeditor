@@ -44,4 +44,5 @@ from .node_editor import (
     SocketCollection,
     DropDownInputControlModel,
     NumberInputControlModel,
+    TextInputControlModel,
 )

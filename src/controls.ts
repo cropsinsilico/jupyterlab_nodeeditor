@@ -184,7 +184,7 @@ export class ReteTextControlModel extends ReteControlModel {
   defaults(): any {
     return {
       ...super.defaults(),
-      initialValue: ""
+      initialValue: ''
     };
   }
   async initialize(attributes: any, options: any): Promise<void> {

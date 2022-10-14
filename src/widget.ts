@@ -60,6 +60,36 @@ export class ReteSocketCollectionModel extends DOMWidgetModel {
   static model_module_version = MODULE_VERSION;
 }
 
+export class ReteConnectionModel extends DOMWidgetModel {
+  defaults(): any {
+    return {
+      ...super.defaults(),
+      _model_name: ReteConnectionModel.model_name,
+      _model_module: ReteConnectionModel.model_module,
+      _model_module_version: ReteConnectionModel.model_module_version,
+      source: undefined,
+      destination: undefined
+    };
+  }
+
+  async initialize(attributes: any, options: any): Promise<void> {
+    this.source = this.get('source');
+    this.destination = this.get('destination');
+  }
+
+  static serializers: ISerializers = {
+    ...DOMWidgetModel.serializers,
+    source: { deserialize: unpack_models },
+    destination: { deserialize: unpack_models }
+  };
+
+  source: ReteOutputModel;
+  destination: ReteInputModel;
+  static model_name = 'ReteConnectionModel';
+  static model_module = MODULE_NAME;
+  static model_module_version = MODULE_VERSION;
+}
+
 abstract class ReteIOModel extends DOMWidgetModel {
   defaults(): any {
     return {
@@ -468,13 +498,16 @@ export class ReteEditorView extends DOMWidgetView {
       this.model.updateViews();
     });
     this.editor.on(
-      ['connectioncreated', 'connectionremoved'],
+      ['connectionremoved'],
       // Note that I *believe* that the connectionremoved function is called
       // whenever a connection is clicked on.  That's not super ideal, since
       // we really only want to sync when the connection has been deleted.
       // We may actually eventually want to explore using connectiondrop, which
       // may fire only when the mouse is lifted.
-      async (connection: Rete.Connection) => this.updateConnection(connection)
+      async (connection: Rete.Connection) => this.removeConnection(connection)
+    );
+    this.editor.on(['connectioncreated'], async (connection: Rete.Connection) =>
+      this.createConnection(connection)
     );
     this.editor.view.resize();
     this.addNewComponent();
@@ -501,8 +534,11 @@ export class ReteEditorView extends DOMWidgetView {
     }
   }
 
-  async updateConnection(connection: Rete.Connection): Promise<void> {
-    console.log('Updated ', connection);
+  async createConnection(connection: Rete.Connection): Promise<void> {
+    console.log('Created ', connection);
+  }
+  async removeConnection(connection: Rete.Connection): Promise<void> {
+    console.log('Removed ', connection);
   }
 
   async createNewNode(node: Rete.Node): Promise<void> {

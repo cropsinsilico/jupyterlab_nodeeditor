@@ -11,19 +11,14 @@ import {
   TextInputControl
 } from 'nodeeditor-controls';
 import { ReteEditorModel } from './widget';
-import { type } from 'os';
-
 type DropDownOption = {
   text: string;
   value: string;
 };
-
-type DefaultNum = number;
-
 //numcontrol
 interface IVueNumControlProps {
+  initialValue?: number;
   ikey: string;
-  initialValue?: DefaultNum;
   reteEmitter?: Rete.Emitter<EventsTypes> | undefined;
   reteGetData?: (ikey: string) => number;
   retePutData?: (ikey: string, value: number) => void;
@@ -33,20 +28,20 @@ class NumControl extends Rete.Control {
   constructor(
     emitter: Rete.Emitter<EventsTypes>,
     key: string,
-    initialValue?: DefaultNum
+    initialValue: number
   ) {
     super(key);
     this.component = NumberInputControl;
     this.props = {
-      initialValue: initialValue || 0,
+      initialValue: initialValue || undefined,
       ikey: key,
       reteEmitter: emitter,
       reteGetData: this.getData.bind(this) as (ikey: string) => number,
       retePutData: this.putData.bind(this)
     };
+
     (this.data as any).render = 'vue';
   }
-
   setValue(val: number) {
     this.vueContext.value = val;
   }
@@ -58,7 +53,7 @@ class NumControl extends Rete.Control {
 
 //textcontrol
 interface IVueTextControlProps {
-  initialValue: string;
+  initialValue?: string;
   ikey: string;
   reteEmitter?: Rete.Emitter<EventsTypes> | undefined;
   reteGetData?: (ikey: string) => number;
@@ -66,11 +61,15 @@ interface IVueTextControlProps {
 }
 
 class TextControl extends Rete.Control {
-  constructor(emitter: Rete.Emitter<EventsTypes>, key: string) {
+  constructor(
+    emitter: Rete.Emitter<EventsTypes>,
+    key: string,
+    initialValue: string
+  ) {
     super(key);
     this.component = TextInputControl;
     this.props = {
-      initialValue: '',
+      initialValue: initialValue || undefined,
       ikey: key,
       reteEmitter: emitter,
       reteGetData: this.getData.bind(this) as (ikey: string) => number,
@@ -162,28 +161,41 @@ export class ReteNumControlModel extends ReteControlModel {
   defaults(): any {
     return {
       ...super.defaults(),
-      initialValue: []
+      initialValue: 0
     };
   }
+
   async initialize(attributes: any, options: any): Promise<void> {
     super.initialize(attributes, options);
-    this.initialValue = this.get('initialValue');
-    console.log('initialValue!', this.initialValue);
-    this.editor = this.get('editor');
+    this.initialValue = this.get('initial_value');
+    // console.log('this is a:', this.initialValue);
   }
+
   getInstance(): NumControl {
     return new NumControl(this.editor.engine, this.key, this.initialValue);
   }
-  initialValue: DefaultNum | undefined;
+  initialValue: number | undefined;
   static model_name = 'ReteNumControlModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
 }
 
 export class ReteTextControlModel extends ReteControlModel {
-  getInstance(): TextControl {
-    return new TextControl(this.editor.engine, this.key);
+  defaults(): any {
+    return {
+      ...super.defaults(),
+      initialValue: ""
+    };
   }
+  async initialize(attributes: any, options: any): Promise<void> {
+    super.initialize(attributes, options);
+    this.initialValue = this.get('initial_value');
+    // console.log('this is a:', this.initialValue);
+  }
+  getInstance(): TextControl {
+    return new TextControl(this.editor.engine, this.key, this.initialValue);
+  }
+  initialValue: string | undefined;
   static model_name = 'ReteTextControlModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
@@ -199,7 +211,7 @@ export class ReteDropDownControlModel extends ReteControlModel {
   async initialize(attributes: any, options: any): Promise<void> {
     super.initialize(attributes, options);
     this.options = this.get('options');
-    console.log('Options!', this.options);
+    // console.log('Options!', this.options);
     if (this.options.length === 0) {
       this.options = undefined;
     }

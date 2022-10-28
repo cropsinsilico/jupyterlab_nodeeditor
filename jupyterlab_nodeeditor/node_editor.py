@@ -22,8 +22,12 @@ class ConnectionModel(ipywidgets.Widget):
     _model_name = traitlets.Unicode("ReteConnectionModel").tag(sync=True)
     _model_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
     _model_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
-    source = traitlets.ForwardDeclaredInstance("OutputSlot").tag(sync=True)
-    destination = traitlets.ForwardDeclaredInstance("InputSlot").tag(sync=True)
+    source = traitlets.ForwardDeclaredInstance("OutputSlot").tag(
+        sync=True, **ipywidgets.widget_serialization
+    )
+    destination = traitlets.ForwardDeclaredInstance("InputSlot").tag(
+        sync=True, **ipywidgets.widget_serialization
+    )
 
 
 @ipywidgets.register
@@ -35,7 +39,9 @@ class InputSlot(ipywidgets.Widget):
     key = traitlets.Unicode().tag(sync=True)
     title = traitlets.Unicode().tag(sync=True)
     multi_connection = traitlets.Bool().tag(sync=True)
-    connections = traitlets.List(trait=traitlets.Instance(ConnectionModel)).tag(sync=True)
+    connections = traitlets.List(trait=traitlets.Instance(ConnectionModel)).tag(
+        sync=True
+    )
     socket_type = traitlets.Unicode().tag(sync=True)
     sockets = traitlets.Instance(SocketCollection).tag(
         sync=True, **ipywidgets.widget_serialization
@@ -71,7 +77,10 @@ class OutputSlot(ipywidgets.Widget):
     key = traitlets.Unicode().tag(sync=True)
     title = traitlets.Unicode().tag(sync=True)
     multi_connection = traitlets.Bool().tag(sync=True)
-    connections = traitlets.List(ConnectionModel).tag(sync=True)
+    # connections = traitlets.List(ConnectionModel).tag(sync=True)
+    connections = traitlets.List(trait=traitlets.Instance(ConnectionModel)).tag(
+        sync=True
+    )
     socket_type = traitlets.Unicode().tag(sync=True)
     sockets = traitlets.Instance(SocketCollection).tag(
         sync=True, **ipywidgets.widget_serialization

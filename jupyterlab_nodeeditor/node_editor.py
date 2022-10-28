@@ -35,7 +35,7 @@ class InputSlot(ipywidgets.Widget):
     key = traitlets.Unicode().tag(sync=True)
     title = traitlets.Unicode().tag(sync=True)
     multi_connection = traitlets.Bool().tag(sync=True)
-    connections = traitlets.List(trait=ConnectionModel).tag(sync=True)
+    connections = traitlets.List(trait=traitlets.Instance(ConnectionModel)).tag(sync=True)
     socket_type = traitlets.Unicode().tag(sync=True)
     sockets = traitlets.Instance(SocketCollection).tag(
         sync=True, **ipywidgets.widget_serialization

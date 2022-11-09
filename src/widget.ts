@@ -61,18 +61,23 @@ export class ReteSocketCollectionModel extends DOMWidgetModel {
 }
 
 export class ReteConnectionModel extends DOMWidgetModel {
+  _connection: Rete.Connection;
   defaults(): any {
     return {
       ...super.defaults(),
       _model_name: ReteConnectionModel.model_name,
       _model_module: ReteConnectionModel.model_module,
       _model_module_version: ReteConnectionModel.model_module_version,
+      _view_name: ReteConnectionModel.view_name,
+      _view_module: ReteConnectionModel.view_module,
+      _view_module_version: ReteConnectionModel.view_module_version,
       source: undefined,
       destination: undefined
     };
   }
 
   async initialize(attributes: any, options: any): Promise<void> {
+    // super.initialize(attributes, options);
     this.source = this.get('source');
     this.destination = this.get('destination');
   }
@@ -83,11 +88,14 @@ export class ReteConnectionModel extends DOMWidgetModel {
     destination: { deserialize: unpack_models }
   };
 
-  source: ReteOutputModel;
-  destination: ReteInputModel;
+  source: ReteOutputModel[] = [];
+  destination: ReteControlModel[] = [];
   static model_name = 'ReteConnectionModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
+  static view_name = 'ReteConnectionView';
+  static view_module = MODULE_NAME;
+  static view_module_version = MODULE_VERSION;
 }
 
 abstract class ReteIOModel extends DOMWidgetModel {
@@ -535,7 +543,28 @@ export class ReteEditorView extends DOMWidgetView {
   }
 
   async createConnection(connection: Rete.Connection): Promise<void> {
-    console.log('Created ', connection);
+    console.log('Created_Connection ', connection); //this will return value 
+    console.log('Create_Connection_Input ', connection.input);
+    const manager: ManagerBase<any> = this.model.widget_manager;
+    const newConnection: ReteConnectionModel = (await manager.new_widget({
+      model_name: ReteConnectionModel.model_name,
+      model_module: ReteConnectionModel.model_module,
+      model_module_version: ReteConnectionModel.model_module_version,
+      view_name: ReteConnectionModel.view_name,
+      view_module: ReteConnectionModel.view_module,
+      view_module_version: ReteConnectionModel.view_module_version
+    })) as ReteConnectionModel;
+    newConnection._connection = connection;
+    console.log('Created_Connection ', connection);//this will not return value 
+    console.log('Create_Connection_Input ', connection.input);
+    newConnection.set('source', connection.input);
+    newConnection.set('destination', connection.output || []);
+    newConnection.save_changes();
+    const newConnections: ReteConnectionModel[] = (
+      this.model.get('connections') as ReteConnectionModel[]
+    ).concat([newConnection]);
+    this.model.set('connections', newConnections);
+    this.model.save_changes();
   }
   async removeConnection(connection: Rete.Connection): Promise<void> {
     console.log('Removed ', connection);
@@ -555,6 +584,7 @@ export class ReteEditorView extends DOMWidgetView {
       view_module_version: ReteNodeModel.view_module_version
     })) as ReteNodeModel;
     newNode._node = node;
+    console.log('Created ', node.name);
     newNode.set('title', node.name);
     newNode.set('inputs', node.meta.inputSlots || []);
     newNode.set('outputs', node.meta.outputSlots || []);

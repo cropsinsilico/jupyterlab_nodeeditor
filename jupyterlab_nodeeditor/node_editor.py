@@ -22,10 +22,14 @@ class ConnectionModel(ipywidgets.Widget):
     _model_name = traitlets.Unicode("ReteConnectionModel").tag(sync=True)
     _model_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
     _model_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
-    source = traitlets.ForwardDeclaredInstance("OutputSlot").tag(
-        sync=True, **ipywidgets.widget_serialization
+    _view_name = traitlets.Unicode("ReteConnectionView").tag(sync=True)
+    _view_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
+    _view_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
+    source = traitlets.ForwardDeclaredInstance("OutputSlot", allow_none=True).tag(
+        sync=True,
+        **ipywidgets.widget_serialization,
     )
-    destination = traitlets.ForwardDeclaredInstance("InputSlot").tag(
+    destination = traitlets.ForwardDeclaredInstance("InputSlot", allow_none=True).tag(
         sync=True, **ipywidgets.widget_serialization
     )
 
@@ -230,6 +234,9 @@ class NodeEditorModel(ipywidgets.DOMWidget):
     nodes = traitlets.List(traitlets.Instance(NodeInstanceModel), default_value=[]).tag(
         sync=True, **ipywidgets.widget_serialization
     )
+    connections = traitlets.List(
+        traitlets.Instance(ConnectionModel), default_value=[]
+    ).tag(sync=True, **ipywidgets.widget_serialization)
 
     def add_component(self, component):
         self._components = self._components + [component]

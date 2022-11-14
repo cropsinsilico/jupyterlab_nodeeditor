@@ -61,23 +61,22 @@ export class ReteSocketCollectionModel extends DOMWidgetModel {
 }
 
 export class ReteConnectionModel extends DOMWidgetModel {
-  _connection: Rete.Connection;
   defaults(): any {
     return {
       ...super.defaults(),
+      source: null,
+      destination: null,
       _model_name: ReteConnectionModel.model_name,
       _model_module: ReteConnectionModel.model_module,
       _model_module_version: ReteConnectionModel.model_module_version,
       _view_name: ReteConnectionModel.view_name,
       _view_module: ReteConnectionModel.view_module,
-      _view_module_version: ReteConnectionModel.view_module_version,
-      source: undefined,
-      destination: undefined
+      _view_module_version: ReteConnectionModel.view_module_version
     };
   }
 
   async initialize(attributes: any, options: any): Promise<void> {
-    // super.initialize(attributes, options);
+    super.initialize(attributes, options);
     this.source = this.get('source');
     this.destination = this.get('destination');
   }
@@ -88,6 +87,7 @@ export class ReteConnectionModel extends DOMWidgetModel {
     destination: { deserialize: unpack_models }
   };
 
+  _connection: Rete.Connection;
   source: ReteOutputModel[] = [];
   destination: ReteControlModel[] = [];
   static model_name = 'ReteConnectionModel';
@@ -96,6 +96,19 @@ export class ReteConnectionModel extends DOMWidgetModel {
   static view_name = 'ReteConnectionView';
   static view_module = MODULE_NAME;
   static view_module_version = MODULE_VERSION;
+}
+
+export class ReteConnectionView extends DOMWidgetView {
+  async render(): Promise<void> {
+    super.render();
+    return this.setupEventListeners();
+  }
+
+  async setupEventListeners(): Promise<void> {
+    return;
+  }
+
+  declare model: ReteConnectionModel;
 }
 
 abstract class ReteIOModel extends DOMWidgetModel {
@@ -379,6 +392,7 @@ export class ReteEditorModel extends DOMWidgetModel {
       _components: [],
       selected_node: undefined,
       nodes: [],
+      connections: [],
       _model_name: ReteEditorModel.model_name,
       _model_module: ReteEditorModel.model_module,
       _model_module_version: ReteEditorModel.model_module_version,
@@ -448,6 +462,7 @@ export class ReteEditorModel extends DOMWidgetModel {
 
   _components: ReteComponentModel[];
   nodes: ReteNodeModel[];
+  connections: ReteConnectionModel[];
   engine: Rete.Engine;
   editorConfig: { [key: string]: any };
   static model_name = 'ReteEditorModel';

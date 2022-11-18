@@ -89,7 +89,7 @@ export class ReteConnectionModel extends DOMWidgetModel {
 
   _connection: Rete.Connection;
   source: ReteOutputModel;
-  destination: ReteControlModel;
+  destination: ReteInputModel;
   static model_name = 'ReteConnectionModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
@@ -165,6 +165,7 @@ export class ReteIOView extends DOMWidgetView {
     return;
   }
 
+  declare _instance: Rete.Input | Rete.Output;
   declare model: ReteInputModel | ReteOutputModel;
 }
 
@@ -177,14 +178,19 @@ export class ReteInputModel extends ReteIOModel {
   }
 
   getInstance(): Rete.Input {
-    return new Rete.Input(
-      this.key,
-      this.title,
-      this.sockets.getSocket(this.socket_type),
-      this.multi_connection
-    );
+    // Disabled for time being
+    if (!this._instance) {
+      return new Rete.Input(
+        this.key,
+        this.title,
+        this.sockets.getSocket(this.socket_type),
+        this.multi_connection
+      );
+    }
+    return this._instance;
   }
 
+  _instance: Rete.Input;
   static model_name = 'ReteInputModel';
 }
 
@@ -197,14 +203,19 @@ export class ReteOutputModel extends ReteIOModel {
   }
 
   getInstance(): Rete.Output {
-    return new Rete.Output(
-      this.key,
-      this.title,
-      this.sockets.getSocket(this.socket_type),
-      this.multi_connection
-    );
+    // Disabled for time being
+    if (!this._instance) {
+      return new Rete.Output(
+        this.key,
+        this.title,
+        this.sockets.getSocket(this.socket_type),
+        this.multi_connection
+      );
+    }
+    return this._instance;
   }
 
+  _instance: Rete.Output;
   static model_name = 'ReteOutputModel';
 }
 
@@ -577,6 +588,7 @@ export class ReteEditorView extends DOMWidgetView {
   setupListeners(): void {
     this.model.on('change:_components', this.addNewComponent, this);
     this.model.on('change:nodes', this.updateNodes, this);
+    this.model.on('change:connections', this.updateConnections, this);
   }
 
   addNewComponent(): void {
@@ -642,6 +654,23 @@ export class ReteEditorView extends DOMWidgetView {
       }
       if (!this.editor.nodes.includes(newNode._node)) {
         this.editor.addNode(newNode._node);
+      }
+    }
+  }
+
+  async updateConnections(model: ReteConnectionModel): Promise<void> {
+    const oldConns: ReteConnectionModel[] = model.previous('connections');
+    const newConns: ReteConnectionModel[] = model.get('connections');
+    for (const remConn of oldConns.filter(_ => !newConns.includes(_))) {
+      // These are instances, so we match based on keys
+      this.editor.removeConnection(remConn._connection);
+    }
+    for (const newConn of newConns.filter(_ => !oldConns.includes(_))) {
+      if (newConn._connection === undefined) {
+        newConn._connection = new Rete.Connection(
+          newConn.source.getInstance(),
+          newConn.destination.getInstance()
+        );
       }
     }
   }

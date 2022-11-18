@@ -318,6 +318,7 @@ export class ReteNodeModel extends DOMWidgetModel {
 
   changeTitle(): void {
     this._node.name = this.get('title');
+    this.title = this.get('title');
   }
 
   changeInputs(): void {
@@ -333,6 +334,7 @@ export class ReteNodeModel extends DOMWidgetModel {
       }
     }
     this._node?.update();
+    this.inputs = this.get('inputs');
   }
 
   changeOutputs(): void {
@@ -348,6 +350,7 @@ export class ReteNodeModel extends DOMWidgetModel {
       }
     }
     this._node?.update();
+    this.outputs = this.get('outputs');
   }
 
   getInputSlot(key: string): ReteInputModel {
@@ -356,6 +359,45 @@ export class ReteNodeModel extends DOMWidgetModel {
 
   getOutputSlot(key: string): ReteOutputModel {
     return this.outputs.find(i => i.key === key);
+  }
+
+  /* This method may not be necessary. */
+  async createSlotsFromRete(node: Rete.Node): Promise<void> {
+    const manager: ManagerBase<any> = this.widget_manager;
+    const inputSlots: ReteInputModel[] = [];
+    const outputSlots: ReteOutputModel[] = [];
+    node.outputs.forEach(async (outputSlot, name) => {
+      const newSlot: ReteOutputModel = (await manager.new_widget({
+        model_name: ReteOutputModel.model_name,
+        model_module: ReteOutputModel.model_module,
+        model_module_version: ReteOutputModel.model_module_version,
+        view_name: ReteOutputModel.view_name,
+        view_module: ReteOutputModel.view_module,
+        view_module_version: ReteOutputModel.view_module_version
+      })) as ReteOutputModel;
+      newSlot.set('key', outputSlot.key);
+      newSlot.set('title', outputSlot.name);
+      newSlot.set('multi_connection', outputSlot.multipleConnections);
+      outputSlots.push(newSlot);
+    });
+    node.inputs.forEach(async (inputSlot, name) => {
+      const newSlot: ReteInputModel = (await manager.new_widget({
+        model_name: ReteInputModel.model_name,
+        model_module: ReteInputModel.model_module,
+        model_module_version: ReteInputModel.model_module_version,
+        view_name: ReteInputModel.view_name,
+        view_module: ReteInputModel.view_module,
+        view_module_version: ReteInputModel.view_module_version
+      })) as ReteInputModel;
+      newSlot.set('key', inputSlot.key);
+      newSlot.set('title', inputSlot.name);
+      newSlot.set('multi_connection', inputSlot.multipleConnections);
+      inputSlots.push(newSlot);
+    });
+    this.outputs = outputSlots;
+    this.set('outputs', outputSlots);
+    this.inputs = inputSlots;
+    this.set('inputs', inputSlots);
   }
 
   changeControls(): void {
@@ -370,6 +412,7 @@ export class ReteNodeModel extends DOMWidgetModel {
         this._node?.addControl(newEl.getInstance());
       }
     }
+    this.controls = this.get('controls');
     this._node?.update();
   }
 
@@ -476,6 +519,28 @@ export class ReteEditorModel extends DOMWidgetModel {
         this.engine.register(v._rete_component);
       }
     });
+  }
+
+  async createNewNodeFromRete(node: Rete.Node): Promise<ReteNodeModel> {
+    const manager: ManagerBase<any> = this.widget_manager;
+    const newNode: ReteNodeModel = (await manager.new_widget({
+      model_name: ReteNodeModel.model_name,
+      model_module: ReteNodeModel.model_module,
+      model_module_version: ReteNodeModel.model_module_version,
+      view_name: ReteNodeModel.view_name,
+      view_module: ReteNodeModel.view_module,
+      view_module_version: ReteNodeModel.view_module_version
+    })) as ReteNodeModel;
+    /* We need to assign the inputSlots and outputSlots as well */
+    newNode._node = node;
+    console.log('Created ', node.name);
+    newNode.set('title', node.name);
+    newNode.set('inputs', node.meta.inputSlots || []);
+    newNode.set('outputs', node.meta.outputSlots || []);
+    newNode.set('controls', node.meta.controls || []);
+    newNode.save_changes();
+    node.meta.nodeModel = newNode;
+    return newNode;
   }
 
   static serializers: ISerializers = {
@@ -625,23 +690,7 @@ export class ReteEditorView extends DOMWidgetView {
     if (node.meta.nodeModel) {
       return;
     }
-    const manager: ManagerBase<any> = this.model.widget_manager;
-    const newNode: ReteNodeModel = (await manager.new_widget({
-      model_name: ReteNodeModel.model_name,
-      model_module: ReteNodeModel.model_module,
-      model_module_version: ReteNodeModel.model_module_version,
-      view_name: ReteNodeModel.view_name,
-      view_module: ReteNodeModel.view_module,
-      view_module_version: ReteNodeModel.view_module_version
-    })) as ReteNodeModel;
-    newNode._node = node;
-    console.log('Created ', node.name);
-    newNode.set('title', node.name);
-    newNode.set('inputs', node.meta.inputSlots || []);
-    newNode.set('outputs', node.meta.outputSlots || []);
-    newNode.set('controls', node.meta.controls || []);
-    newNode.save_changes();
-    node.meta.nodeModel = newNode;
+    const newNode = await this.model.createNewNodeFromRete(node);
     const newNodes: ReteNodeModel[] = (
       this.model.get('nodes') as ReteNodeModel[]
     ).concat([newNode]);

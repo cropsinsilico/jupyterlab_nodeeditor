@@ -88,8 +88,8 @@ export class ReteConnectionModel extends DOMWidgetModel {
   };
 
   _connection: Rete.Connection;
-  source: ReteOutputModel[] = [];
-  destination: ReteControlModel[] = [];
+  source: ReteOutputModel;
+  destination: ReteControlModel;
   static model_name = 'ReteConnectionModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
@@ -334,6 +334,14 @@ export class ReteNodeModel extends DOMWidgetModel {
     this._node?.update();
   }
 
+  getInputSlot(key: string): ReteInputModel {
+    return this.inputs.find(i => i.key === key);
+  }
+
+  getOutputSlot(key: string): ReteOutputModel {
+    return this.outputs.find(i => i.key === key);
+  }
+
   changeControls(): void {
     const newControls: ReteControlModel[] = this.get('controls') || [];
     const oldControls: ReteControlModel[] = this.previous('controls') || [];
@@ -570,10 +578,22 @@ export class ReteEditorView extends DOMWidgetView {
       view_module_version: ReteConnectionModel.view_module_version
     })) as ReteConnectionModel;
     newConnection._connection = connection;
-    console.log('Created_Connection ', connection);//this will not return value 
+    console.log('Created_Connection ', connection); //this will not return value
     console.log('Create_Connection_Input ', connection.input);
-    newConnection.set('source', connection.input);
-    newConnection.set('destination', connection.output || []);
+    const sourceNode: ReteNodeModel = connection.output.node.meta
+      .nodeModel as ReteNodeModel;
+    const destNode: ReteNodeModel = connection.input.node.meta
+      .nodeModel as ReteNodeModel;
+    // We need to get the slots
+    newConnection.set(
+      'source',
+      sourceNode.getOutputSlot(connection.output.key)
+    );
+    newConnection.set(
+      'destination',
+      destNode.getInputSlot(connection.input.key)
+    );
+
     newConnection.save_changes();
     const newConnections: ReteConnectionModel[] = (
       this.model.get('connections') as ReteConnectionModel[]

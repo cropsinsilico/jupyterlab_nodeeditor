@@ -145,11 +145,27 @@ abstract class ReteIOModel extends DOMWidgetModel {
   static model_name = 'ReteIOModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
+  static view_name = 'ReteIOView';
+  static view_module = MODULE_NAME;
+  static view_module_version = MODULE_VERSION;
 
   static serializers: ISerializers = {
     ...DOMWidgetModel.serializers,
     sockets: { deserialize: unpack_models }
   };
+}
+
+export class ReteIOView extends DOMWidgetView {
+  async render(): Promise<void> {
+    super.render();
+    return this.setupEventListeners();
+  }
+
+  async setupEventListeners(): Promise<void> {
+    return;
+  }
+
+  declare model: ReteInputModel | ReteOutputModel;
 }
 
 export class ReteInputModel extends ReteIOModel {
@@ -566,7 +582,7 @@ export class ReteEditorView extends DOMWidgetView {
   }
 
   async createConnection(connection: Rete.Connection): Promise<void> {
-    console.log('Created_Connection ', connection); //this will return value 
+    console.log('Created_Connection ', connection); //this will return value
     console.log('Create_Connection_Input ', connection.input);
     const manager: ManagerBase<any> = this.model.widget_manager;
     const newConnection: ReteConnectionModel = (await manager.new_widget({

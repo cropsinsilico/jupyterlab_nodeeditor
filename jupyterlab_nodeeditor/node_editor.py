@@ -32,7 +32,7 @@ class InputSlot(ipywidgets.Widget):
     )
 
     def _ipython_display_(self):
-        display(self.widget())
+        display(ipywidgets.HBox(self.widget()))
 
     def widget(self):
         # We're going to return this as columns -- left and right.
@@ -72,7 +72,7 @@ class OutputSlot(ipywidgets.Widget):
     )
 
     def _ipython_display_(self):
-        display(self.widget())
+        display(ipywidgets.HBox(self.widget()))
 
     def widget(self):
         # We're going to return this as columns -- left and right.
@@ -276,5 +276,12 @@ class NodeEditor(traitlets.HasTraits):
 
         self.node_editor.observe(update_nodes, ["nodes"])
         self.node_editor.observe(update_selected, ["selected_node"])
-
-        display(ipywidgets.HBox([self.node_editor, tabs]))
+        app_layout = ipywidgets.AppLayout(
+            header=ipywidgets.Label("Node Editor"),
+            left_sidebar=None,
+            center=self.node_editor,
+            right_sidebar=tabs,
+            footer=None,
+            pane_heights=[1, "500px", 1],
+        )
+        display(app_layout)

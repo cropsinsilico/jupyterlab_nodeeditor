@@ -251,6 +251,7 @@ export class ReteNodeModel extends DOMWidgetModel {
 
   changeTitle(): void {
     this._node.name = this.get('title');
+    this._node.update();
   }
 
   changeInputs(): void {
@@ -489,7 +490,7 @@ export class ReteEditorView extends DOMWidgetView {
     }
     for (const newNode of newNodes.filter(_ => !oldNodes.includes(_))) {
       if (newNode._node === undefined) {
-        newNode._node = new Rete.Node(newNode.get('type_name'));
+        newNode._node = new Rete.Node(newNode.get('title'));
         newNode._node.meta.nodeModel = newNode;
         newNode.changeInputs();
         newNode.changeOutputs();

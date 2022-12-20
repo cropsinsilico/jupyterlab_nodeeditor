@@ -120,13 +120,13 @@ class DropDownInputControlModel(InputControlModel):
 @ipywidgets.register
 class NumberInputControlModel(InputControlModel):
     _model_name = traitlets.Unicode("ReteNumControlModel").tag(sync=True)
-    initial_value = traitlets.CInt().tag(sync=True)
+    value = traitlets.CInt().tag(sync=True)
 
 
 @ipywidgets.register
 class TextInputControlModel(InputControlModel):
     _model_name = traitlets.Unicode("ReteTextControlModel").tag(sync=True)
-    initial_value = traitlets.Unicode().tag(sync=True)
+    value = traitlets.Unicode().tag(sync=True)
 
 
 @ipywidgets.register

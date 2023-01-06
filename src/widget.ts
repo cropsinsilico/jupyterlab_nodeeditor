@@ -251,6 +251,7 @@ export class ReteNodeModel extends DOMWidgetModel {
 
   changeTitle(): void {
     this._node.name = this.get('title');
+    this._node.update();
   }
 
   changeInputs(): void {
@@ -422,10 +423,11 @@ export class ReteEditorModel extends DOMWidgetModel {
 
 export class ReteEditorView extends DOMWidgetView {
   render(): void {
+    this.el.classList.add('retejseditor');
     this.div = document.createElement('div');
     this.divId = 'rete-editor-' + uuid();
+    this.div.classList.add('retejseditorDiv');
     this.div.setAttribute('id', this.divId);
-    this.el.classList.add('retejseditor');
     this.el.appendChild(this.div);
     //await this.editor.fromJSON(editorData as any);
     this.setupListeners();
@@ -477,6 +479,7 @@ export class ReteEditorView extends DOMWidgetView {
       async (connection: Rete.Connection) => this.updateConnection(connection)
     );
     this.editor.view.resize();
+    this.div.style.height = null;
     this.addNewComponent();
   }
 
@@ -489,7 +492,7 @@ export class ReteEditorView extends DOMWidgetView {
     }
     for (const newNode of newNodes.filter(_ => !oldNodes.includes(_))) {
       if (newNode._node === undefined) {
-        newNode._node = new Rete.Node(newNode.get('type_name'));
+        newNode._node = new Rete.Node(newNode.get('title'));
         newNode._node.meta.nodeModel = newNode;
         newNode.changeInputs();
         newNode.changeOutputs();

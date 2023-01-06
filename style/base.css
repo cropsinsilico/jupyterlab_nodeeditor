@@ -1,5 +1,14 @@
 .retejseditor {
-    height: 400px;
-    width: 800px;
+    height: 100%;
+    width: 100%;
     border: 1px solid grey;
+}
+
+.retejseditorDiv {
+    height: 100%;
+    width: 100%x;
+}
+
+.retejsNode {
+    background-color: #000000;
 }

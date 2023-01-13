@@ -28,10 +28,12 @@ class NumControl extends Rete.Control {
   constructor(
     emitter: Rete.Emitter<EventsTypes>,
     key: string,
-    initialValue: number
+    initialValue: number,
+    control: ReteNumControlModel
   ) {
     super(key);
     this.component = NumberInputControl;
+    this.control = control;
     this.props = {
       initialValue: initialValue || undefined,
       ikey: key,
@@ -46,9 +48,18 @@ class NumControl extends Rete.Control {
     this.vueContext.value = val;
   }
 
+  putData(key: string, data: unknown): void {
+    super.putData(key, data);
+    if (key === this.props.ikey) {
+      this.control.set('value', data);
+      this.control.save_changes();
+    }
+  }
+
   component: any;
   vueContext: any;
   props: IVueNumControlProps;
+  control: ReteNumControlModel;
 }
 
 //textcontrol
@@ -64,10 +75,12 @@ class TextControl extends Rete.Control {
   constructor(
     emitter: Rete.Emitter<EventsTypes>,
     key: string,
-    initialValue: string
+    initialValue: string,
+    control: ReteTextControlModel
   ) {
     super(key);
     this.component = TextInputControl;
+    this.control = control;
     this.props = {
       initialValue: initialValue || undefined,
       ikey: key,
@@ -82,9 +95,16 @@ class TextControl extends Rete.Control {
     this.vueContext.value = val;
   }
 
+  putData(key: string, data: unknown): void {
+    super.putData(key, data);
+    if (key === this.props.ikey) {
+      this.control.set('value', data);
+    }
+  }
   component: any;
   vueContext: any;
   props: IVueTextControlProps;
+  control: ReteTextControlModel;
 }
 
 //dropdowncontrol
@@ -100,10 +120,12 @@ class DropDownControl extends Rete.Control {
   constructor(
     emitter: Rete.Emitter<EventsTypes>,
     key: string,
-    options?: DropDownOption[]
+    options: DropDownOption[],
+    control: ReteDropDownControlModel
   ) {
     super(key);
     this.component = DropDownInputControl;
+    this.control = control;
     this.props = {
       ikey: key,
       reteEmitter: emitter,
@@ -118,9 +140,16 @@ class DropDownControl extends Rete.Control {
     this.vueContext.value = val;
   }
 
+  putData(key: string, data: unknown): void {
+    super.putData(key, data);
+    if (key === this.props.ikey) {
+      this.control.set('value', data);
+    }
+  }
   component: any;
   vueContext: any;
   props: IVueDropDownControlProps;
+  control: ReteDropDownControlModel;
 }
 
 export class ReteControlModel extends DOMWidgetModel {
@@ -161,20 +190,19 @@ export class ReteNumControlModel extends ReteControlModel {
   defaults(): any {
     return {
       ...super.defaults(),
-      initialValue: 0
+      value: 0
     };
   }
 
   async initialize(attributes: any, options: any): Promise<void> {
     super.initialize(attributes, options);
-    this.initialValue = this.get('initial_value');
-    // console.log('this is a:', this.initialValue);
+    this.value = this.get('value');
   }
 
   getInstance(): NumControl {
-    return new NumControl(this.editor.engine, this.key, this.initialValue);
+    return new NumControl(this.editor.engine, this.key, this.value, this);
   }
-  initialValue: number | undefined;
+  value: number | undefined;
   static model_name = 'ReteNumControlModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
@@ -184,18 +212,18 @@ export class ReteTextControlModel extends ReteControlModel {
   defaults(): any {
     return {
       ...super.defaults(),
-      initialValue: ""
+      value: ''
     };
   }
   async initialize(attributes: any, options: any): Promise<void> {
     super.initialize(attributes, options);
-    this.initialValue = this.get('initial_value');
+    this.value = this.get('value');
     // console.log('this is a:', this.initialValue);
   }
   getInstance(): TextControl {
-    return new TextControl(this.editor.engine, this.key, this.initialValue);
+    return new TextControl(this.editor.engine, this.key, this.value, this);
   }
-  initialValue: string | undefined;
+  value: string | undefined;
   static model_name = 'ReteTextControlModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
@@ -218,7 +246,12 @@ export class ReteDropDownControlModel extends ReteControlModel {
     this.editor = this.get('editor');
   }
   getInstance(): DropDownControl {
-    return new DropDownControl(this.editor.engine, this.key, this.options);
+    return new DropDownControl(
+      this.editor.engine,
+      this.key,
+      this.options,
+      this
+    );
   }
   options: DropDownOption[] | undefined;
   static model_name = 'ReteDropDownControlModel';

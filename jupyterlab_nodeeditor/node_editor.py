@@ -264,15 +264,15 @@ class NodeEditor(traitlets.HasTraits):
         return SocketCollection()
 
     def _ipython_display_(self):
-        tabs = ipywidgets.Tab()
+        accordion = ipywidgets.Accordion()
 
         def update_nodes(change):
-            tabs.children = [node.display_element for node in change["new"]]
+            accordion.children = [node.display_element for node in change["new"]]
             for i, node in enumerate(change["new"]):
-                tabs.set_title(i, f"Node {i+1} - {node.title}")
+                accordion.set_title(i, f"Node {i+1} - {node.title}")
 
         def update_selected(change):
-            tabs.selected_index = self.node_editor.nodes.index(change["new"])
+            accordion.selected_index = self.node_editor.nodes.index(change["new"])
 
         self.node_editor.observe(update_nodes, ["nodes"])
         self.node_editor.observe(update_selected, ["selected_node"])
@@ -280,8 +280,9 @@ class NodeEditor(traitlets.HasTraits):
             header=ipywidgets.Label("Node Editor"),
             left_sidebar=None,
             center=self.node_editor,
-            right_sidebar=tabs,
+            right_sidebar=accordion,
             footer=None,
             pane_heights=[1, "500px", 1],
+            pane_widths=[1, 10, "300px"],
         )
         display(app_layout)

@@ -4,7 +4,6 @@ models:
   - name: modelA
     language: python
     args: ./src/modelA.py
-    inputs: inputA
     outputs: outputA
 
   - name: modelB
@@ -17,4 +16,3 @@ models:
     language: python
     args: ./src/modelC.py
     inputs: inputC
-    outputs: outputC 

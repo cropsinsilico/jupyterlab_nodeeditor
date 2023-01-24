@@ -1,0 +1,37 @@
+models:
+- args: ./src/modelA.py
+  language: python
+  name: modelA1
+  outputs:
+  - name: modelA1:out_1
+- args: ./src/modelA.py
+  inputs:
+  - name: modelB:int_1
+  language: python
+  name: modelB
+  outputs:
+  - name: modelB:out_1
+- args: ./src/modelA.py
+  inputs:
+  - name: modelC:int_1
+  language: python
+  name: modelC
+- args: ./src/modelA.py
+  inputs:
+  - name: PhotosynthesisModel:int_1
+  - name: PhotosynthesisModel:int_2
+  - name: PhotosynthesisModel:int_3
+  language: python
+  name: PhotosynthesisModel
+  outputs:
+  - name: PhotosynthesisModel:out_1
+- args: ./src/modelA.py
+  language: python
+  name: modelA2
+  outputs:
+  - name: modelA2:out_1
+- args: ./src/modelA.py
+  language: python
+  name: modelA3
+  outputs:
+  - name: modelA3:out_1

@@ -478,9 +478,26 @@ export class ReteEditorView extends DOMWidgetView {
       // may fire only when the mouse is lifted.
       async (connection: Rete.Connection) => this.updateConnection(connection)
     );
+    this.editor.on(
+      [
+        'connectioncreated',
+        'connectionremoved',
+        'nodecreated',
+        'noderemoved',
+        'componentregister'
+      ],
+      async () => this.updateConfig()
+    );
     this.editor.view.resize();
     this.div.style.height = null;
     this.addNewComponent();
+  }
+
+  async updateConfig(): Promise<void> {
+    this.model.editorConfig = this.editor.toJSON();
+    // console.log('Updating config', this.model.editorConfig);
+    this.model.set('editorConfig', this.model.editorConfig);
+    this.model.save();
   }
 
   async updateNodes(model: ReteEditorModel): Promise<void> {

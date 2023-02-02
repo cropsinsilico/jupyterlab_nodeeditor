@@ -11,6 +11,15 @@ models:
   name: modelB
   outputs:
   - name: modelB:outputB
+- args: ./src/photosynthesis.py
+  inputs:
+  - name: PhotosynthesisModel:light_intensity
+  - name: PhotosynthesisModel:temperature
+  - name: PhotosynthesisModel:co2
+  language: python
+  name: PhotosynthesisModel
+  outputs:
+  - name: PhotosynthesisModel:photosynthesis_rate
 - args: ./src/modelC.py
   inputs:
   - name: modelC:inputC
@@ -21,12 +30,8 @@ models:
   name: modelA1
   outputs:
   - name: modelA1:outputA
-- args: ./src/photosynthesis.py
-  inputs:
-  - name: PhotosynthesisModel:light_intensity
-  - name: PhotosynthesisModel:temperature
-  - name: PhotosynthesisModel:co2
+- args: ./src/modelA.py
   language: python
-  name: PhotosynthesisModel
+  name: modelAAAA
   outputs:
-  - name: PhotosynthesisModel:photosynthesis_rate
+  - name: modelAAAA:outputA

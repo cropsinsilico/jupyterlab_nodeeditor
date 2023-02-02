@@ -1,37 +1,32 @@
 models:
 - args: ./src/modelA.py
   language: python
-  name: modelA1
+  name: modelA
   outputs:
-  - name: modelA1:out_1
-- args: ./src/modelA.py
+  - name: modelA:outputA
+- args: ./src/modelB.py
   inputs:
-  - name: modelB:int_1
+  - name: modelB:inputB
   language: python
   name: modelB
   outputs:
-  - name: modelB:out_1
-- args: ./src/modelA.py
+  - name: modelB:outputB
+- args: ./src/modelC.py
   inputs:
-  - name: modelC:int_1
+  - name: modelC:inputC
   language: python
   name: modelC
 - args: ./src/modelA.py
+  language: python
+  name: modelA1
+  outputs:
+  - name: modelA1:outputA
+- args: ./src/photosynthesis.py
   inputs:
-  - name: PhotosynthesisModel:int_1
-  - name: PhotosynthesisModel:int_2
-  - name: PhotosynthesisModel:int_3
+  - name: PhotosynthesisModel:light_intensity
+  - name: PhotosynthesisModel:temperature
+  - name: PhotosynthesisModel:co2
   language: python
   name: PhotosynthesisModel
   outputs:
-  - name: PhotosynthesisModel:out_1
-- args: ./src/modelA.py
-  language: python
-  name: modelA2
-  outputs:
-  - name: modelA2:out_1
-- args: ./src/modelA.py
-  language: python
-  name: modelA3
-  outputs:
-  - name: modelA3:out_1
+  - name: PhotosynthesisModel:photosynthesis_rate

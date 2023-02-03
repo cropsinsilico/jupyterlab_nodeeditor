@@ -362,10 +362,10 @@ export class ReteEditorModel extends DOMWidgetModel {
 
   async updateViews(): Promise<void> {
     for (const viewId of Object.keys(this.views)) {
-      await this.views[viewId].then(v => {
-        (v as ReteEditorView).editor.view.area.update();
-        for (const [node, nodeView] of (v as ReteEditorView).editor.view
-          .nodes) {
+      await this.views[viewId].then(_v => {
+        const v = _v as ReteEditorView;
+        v.editor.view.area.update();
+        for (const [node, nodeView] of v.editor.view.nodes) {
           node.update();
           nodeView.update();
         }

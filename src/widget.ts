@@ -491,6 +491,24 @@ export class ReteEditorView extends DOMWidgetView {
     this.editor.view.resize();
     this.div.style.height = null;
     this.addNewComponent();
+    return this.addInitialNodes();
+  }
+
+  private async addInitialNodes(): Promise<void> {
+    const nodes: ReteNodeModel[] = this.model.get('nodes');
+    for (const newNode of nodes) {
+      if (newNode._node === undefined) {
+        console.log('Adding new node', newNode);
+        newNode._node = new Rete.Node(newNode.get('title'));
+        newNode._node.meta.nodeModel = newNode;
+        newNode.changeInputs();
+        newNode.changeOutputs();
+        newNode.changeControls();
+      }
+      if (!this.editor.nodes.includes(newNode._node)) {
+        this.editor.addNode(newNode._node);
+      }
+    }
   }
 
   async updateConfig(): Promise<void> {

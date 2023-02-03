@@ -319,6 +319,7 @@ export class ReteNodeModel extends DOMWidgetModel {
   changeTitle(): void {
     this._node.name = this.get('title');
     this.title = this.get('title');
+    this._node.update();
   }
 
   changeInputs(): void {
@@ -480,8 +481,13 @@ export class ReteEditorModel extends DOMWidgetModel {
 
   async updateViews(): Promise<void> {
     for (const viewId of Object.keys(this.views)) {
-      await this.views[viewId].then(v => {
-        (v as ReteEditorView).editor.view.area.update();
+      await this.views[viewId].then(_v => {
+        const v = _v as ReteEditorView;
+        v.editor.view.area.update();
+        for (const [node, nodeView] of v.editor.view.nodes) {
+          node.update();
+          nodeView.update();
+        }
       });
     }
   }
@@ -564,10 +570,11 @@ export class ReteEditorModel extends DOMWidgetModel {
 
 export class ReteEditorView extends DOMWidgetView {
   render(): void {
+    this.el.classList.add('retejseditor');
     this.div = document.createElement('div');
     this.divId = 'rete-editor-' + uuid();
+    this.div.classList.add('retejseditorDiv');
     this.div.setAttribute('id', this.divId);
-    this.el.classList.add('retejseditor');
     this.el.appendChild(this.div);
     //await this.editor.fromJSON(editorData as any);
     this.setupListeners();
@@ -597,6 +604,9 @@ export class ReteEditorView extends DOMWidgetView {
     this.editor.use(ConnectionPlugin);
     this.editor.use(ContextMenuPlugin);
     this.editor.register(defaultComponent);
+    this.editor.on(['nodetranslated'], async () => {
+      this.model.updateViews();
+    });
     this.editor.on(['noderemoved'], async () => {
       this.model.updateViews();
     });
@@ -621,8 +631,44 @@ export class ReteEditorView extends DOMWidgetView {
     this.editor.on(['connectioncreated'], async (connection: Rete.Connection) =>
       this.createConnection(connection)
     );
+    this.editor.on(
+      [
+        'connectioncreated',
+        'connectionremoved',
+        'nodecreated',
+        'noderemoved',
+        'componentregister'
+      ],
+      async () => this.updateConfig()
+    );
     this.editor.view.resize();
+    this.div.style.height = null;
     this.addNewComponent();
+    return this.addInitialNodes();
+  }
+
+  private async addInitialNodes(): Promise<void> {
+    const nodes: ReteNodeModel[] = this.model.get('nodes');
+    for (const newNode of nodes) {
+      if (newNode._node === undefined) {
+        console.log('Adding new node', newNode);
+        newNode._node = new Rete.Node(newNode.get('title'));
+        newNode._node.meta.nodeModel = newNode;
+        newNode.changeInputs();
+        newNode.changeOutputs();
+        newNode.changeControls();
+      }
+      if (!this.editor.nodes.includes(newNode._node)) {
+        this.editor.addNode(newNode._node);
+      }
+    }
+  }
+
+  async updateConfig(): Promise<void> {
+    this.model.editorConfig = this.editor.toJSON();
+    // console.log('Updating config', this.model.editorConfig);
+    this.model.set('editorConfig', this.model.editorConfig);
+    this.model.save();
   }
 
   async updateNodes(model: ReteEditorModel): Promise<void> {
@@ -634,7 +680,7 @@ export class ReteEditorView extends DOMWidgetView {
     }
     for (const newNode of newNodes.filter(_ => !oldNodes.includes(_))) {
       if (newNode._node === undefined) {
-        newNode._node = new Rete.Node(newNode.get('type_name'));
+        newNode._node = new Rete.Node(newNode.get('title'));
         newNode._node.meta.nodeModel = newNode;
         newNode.changeInputs();
         newNode.changeOutputs();

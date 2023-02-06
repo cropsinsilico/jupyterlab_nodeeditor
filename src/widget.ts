@@ -151,27 +151,11 @@ abstract class ReteIOModel extends DOMWidgetModel {
   static model_name = 'ReteIOModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
-  static view_name = 'ReteIOView';
-  static view_module = MODULE_NAME;
-  static view_module_version = MODULE_VERSION;
 
   static serializers: ISerializers = {
     ...DOMWidgetModel.serializers,
     sockets: { deserialize: unpack_models }
   };
-}
-
-export class ReteIOView extends DOMWidgetView {
-  async render(): Promise<void> {
-    super.render();
-    return this.setupEventListeners();
-  }
-
-  async setupEventListeners(): Promise<void> {
-    return;
-  }
-
-  declare model: ReteInputModel | ReteOutputModel;
 }
 
 export class ReteInputModel extends ReteIOModel {

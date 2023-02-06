@@ -295,6 +295,7 @@ class NodeEditor(traitlets.HasTraits):
         def update_selected(change):
             accordion.selected_index = self.node_editor.nodes.index(change["new"])
 
+        update_nodes({"new": self.node_editor.nodes})
         self.node_editor.observe(update_nodes, ["nodes"])
         self.node_editor.observe(update_selected, ["selected_node"])
         app_layout = ipywidgets.AppLayout(

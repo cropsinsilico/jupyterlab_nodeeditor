@@ -35,14 +35,24 @@ def _load_jupyter_server_extension(server_app):
     )
 
 
+def _initialize_hotfix():
+    """
+    This is a gross monkeypatch to address
+    https://github.com/ipython/ipykernel/issues/1090
+    """
+    import ipywidgets
+
+    ipywidgets.Widget.class_traits()["comm"].klass = "ipykernel.comm.comm.BaseComm"
+
+
 from .node_editor import (
     Component,
+    DropDownInputControlModel,
     InputSlot,
     NodeEditor,
     NodeEditorModel,
+    NumberInputControlModel,
     OutputSlot,
     SocketCollection,
-    DropDownInputControlModel,
-    NumberInputControlModel,
     TextInputControlModel,
 )

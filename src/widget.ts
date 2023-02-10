@@ -14,7 +14,7 @@ import {
   DOMWidgetView,
   uuid,
   unpack_models,
-  ManagerBase
+  IWidgetManager
 } from '@jupyter-widgets/base';
 import type { ISerializers } from '@jupyter-widgets/base';
 import { MODULE_NAME, MODULE_VERSION } from './version';
@@ -392,7 +392,7 @@ export class ReteNodeView extends DOMWidgetView {
     return;
   }
 
-  declare model: ReteNodeModel;
+  model: ReteNodeModel;
 }
 
 export class ReteEditorModel extends DOMWidgetModel {
@@ -418,6 +418,7 @@ export class ReteEditorModel extends DOMWidgetModel {
     super.initialize(attributes, options);
     this.engine = new Rete.Engine(`${MODULE_NAME}@${MODULE_VERSION}`);
     this.on('change:_components', this.addNewComponent, this);
+    this.on('change:nodes', () => (this.nodes = this.get('nodes')));
     this.on('msg:custom', this.onCommand.bind(this));
     this.addNewComponent();
   }
@@ -662,29 +663,31 @@ export class ReteEditorView extends DOMWidgetView {
     if (node.meta.nodeModel) {
       return;
     }
-    const manager: ManagerBase<any> = this.model.widget_manager;
-    const newNode: ReteNodeModel = (await manager.new_widget({
-      model_name: ReteNodeModel.model_name,
-      model_module: ReteNodeModel.model_module,
-      model_module_version: ReteNodeModel.model_module_version,
-      view_name: ReteNodeModel.view_name,
-      view_module: ReteNodeModel.view_module,
-      view_module_version: ReteNodeModel.view_module_version
-    })) as ReteNodeModel;
-    /* We need to assign the inputSlots and outputSlots as well */
+    const manager = this.model.widget_manager;
+    const newNode: ReteNodeModel = (await manager.new_widget(
+      {
+        model_name: ReteNodeModel.model_name,
+        model_module: ReteNodeModel.model_module,
+        model_module_version: ReteNodeModel.model_module_version,
+        view_name: ReteNodeModel.view_name,
+        view_module: ReteNodeModel.view_module,
+        view_module_version: ReteNodeModel.view_module_version
+      },
+      {
+        title: node.name,
+        type_name: 'Type Name',
+        inputs: [],
+        outputs: [],
+        controls: []
+      }
+    )) as ReteNodeModel;
     newNode._node = node;
-    console.log('Created ', node.name);
-    newNode.set('title', node.name);
-    newNode.set('inputs', node.meta.inputSlots || []);
-    newNode.set('outputs', node.meta.outputSlots || []);
-    newNode.set('controls', node.meta.controls || []);
-    newNode.save_changes();
     node.meta.nodeModel = newNode;
     const newNodes: ReteNodeModel[] = (
       this.model.get('nodes') as ReteNodeModel[]
     ).concat([newNode]);
     this.model.set('nodes', newNodes);
-    this.model.save_changes();
+    await this.model.save();
   }
 
   declare model: ReteEditorModel;

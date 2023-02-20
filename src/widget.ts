@@ -13,8 +13,7 @@ import {
   DOMWidgetModel,
   DOMWidgetView,
   uuid,
-  unpack_models,
-  IWidgetManager
+  unpack_models
 } from '@jupyter-widgets/base';
 import type { ISerializers } from '@jupyter-widgets/base';
 import { MODULE_NAME, MODULE_VERSION } from './version';
@@ -634,20 +633,20 @@ export class ReteEditorView extends DOMWidgetView {
       // These are instances, so we match based on keys
       this.editor.removeConnection(remConn._connection);
     }
-    for (const newConn of newConns.filter(_ => !oldConns.includes(_))) {
-      if (newConn._connection === undefined) {
-        newConn._connection = new Rete.Connection(
-          newConn.source.getInstance(),
-          newConn.destination.getInstance()
-        );
-      }
-    }
+    // for (const newConn of newConns.filter(_ => !oldConns.includes(_))) {
+    //   if (newConn._connection === undefined) {
+    //     newConn._connection = new Rete.Connection(
+    //       newConn.source.getInstance(),
+    //       newConn.destination.getInstance()
+    //     );
+    //   }
+    // }
   }
 
   async createConnection(connection: Rete.Connection): Promise<void> {
     console.log('Created_Connection ', connection); //this will return value
     console.log('Create_Connection_Input ', connection.input);
-    const manager: ManagerBase<any> = this.model.widget_manager;
+    const manager = this.model.widget_manager;
     const newConnection: ReteConnectionModel = (await manager.new_widget({
       model_name: ReteConnectionModel.model_name,
       model_module: ReteConnectionModel.model_module,

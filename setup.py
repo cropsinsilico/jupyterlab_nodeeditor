@@ -29,13 +29,13 @@ data_files_spec = [
     (
         "etc/jupyter/jupyter_server_config.d",
         "jupyter-config/server-config",
-        "jupterlab_nodeeditor.json",
+        f"{name}.json",
     ),
     # For backward compatibility with notebook server
     (
         "etc/jupyter/jupyter_notebook_config.d",
         "jupyter-config/nb-config",
-        "jupterlab_nodeeditor.json",
+        f"{name}.json",
     ),
 ]
 

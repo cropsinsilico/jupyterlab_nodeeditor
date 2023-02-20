@@ -18,23 +18,6 @@ class SocketCollection(ipywidgets.Widget):
 
 
 @ipywidgets.register
-class ConnectionModel(ipywidgets.Widget):
-    _model_name = traitlets.Unicode("ReteConnectionModel").tag(sync=True)
-    _model_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
-    _model_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
-    _view_name = traitlets.Unicode("ReteConnectionView").tag(sync=True)
-    _view_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
-    _view_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
-    source = traitlets.ForwardDeclaredInstance("OutputSlot", allow_none=True).tag(
-        sync=True,
-        **ipywidgets.widget_serialization,
-    )
-    destination = traitlets.ForwardDeclaredInstance("InputSlot", allow_none=True).tag(
-        sync=True, **ipywidgets.widget_serialization
-    )
-
-
-@ipywidgets.register
 class InputSlot(ipywidgets.Widget):
     _model_name = traitlets.Unicode("ReteInputModel").tag(sync=True)
     _model_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
@@ -43,19 +26,21 @@ class InputSlot(ipywidgets.Widget):
     key = traitlets.Unicode().tag(sync=True)
     title = traitlets.Unicode().tag(sync=True)
     multi_connection = traitlets.Bool().tag(sync=True)
-    connections = traitlets.List(trait=traitlets.Instance(ConnectionModel)).tag(
-        sync=True
-    )
     socket_type = traitlets.Unicode().tag(sync=True)
     sockets = traitlets.Instance(SocketCollection).tag(
         sync=True, **ipywidgets.widget_serialization
     )
 
     def _ipython_display_(self):
-        display(self.widget())
+        display(ipywidgets.HBox(self.widget()))
 
     def widget(self):
-        return ipywidgets.Label(f"Slot {self.key}: {self.title} ({self.socket_type})")
+        # We're going to return this as columns -- left and right.
+        name = ipywidgets.HTML(
+            f"<b><tt>{self.key}</tt>: {self.title}</b> ({self.socket_type})"
+        )
+        val = ipywidgets.HTML("")
+        return name, val
 
 
 class InputSlotTrait(traitlets.TraitType):
@@ -81,20 +66,21 @@ class OutputSlot(ipywidgets.Widget):
     key = traitlets.Unicode().tag(sync=True)
     title = traitlets.Unicode().tag(sync=True)
     multi_connection = traitlets.Bool().tag(sync=True)
-    # connections = traitlets.List(ConnectionModel).tag(sync=True)
-    connections = traitlets.List(trait=traitlets.Instance(ConnectionModel)).tag(
-        sync=True
-    )
     socket_type = traitlets.Unicode().tag(sync=True)
     sockets = traitlets.Instance(SocketCollection).tag(
         sync=True, **ipywidgets.widget_serialization
     )
 
     def _ipython_display_(self):
-        display(self.widget())
+        display(ipywidgets.HBox(self.widget()))
 
     def widget(self):
-        return ipywidgets.Label(f"Slot {self.key}: {self.title} ({self.socket_type})")
+        # We're going to return this as columns -- left and right.
+        name = ipywidgets.HTML(
+            f"<b><tt>{self.key}</tt>: {self.title}</b> ({self.socket_type})"
+        )
+        val = ipywidgets.HTML("")
+        return name, val
 
 
 class OutputSlotTrait(traitlets.TraitType):
@@ -134,13 +120,13 @@ class DropDownInputControlModel(InputControlModel):
 @ipywidgets.register
 class NumberInputControlModel(InputControlModel):
     _model_name = traitlets.Unicode("ReteNumControlModel").tag(sync=True)
-    initial_value = traitlets.CInt().tag(sync=True)
+    value = traitlets.CInt().tag(sync=True)
 
 
 @ipywidgets.register
 class TextInputControlModel(InputControlModel):
     _model_name = traitlets.Unicode("ReteTextControlModel").tag(sync=True)
-    initial_value = traitlets.Unicode().tag(sync=True)
+    value = traitlets.Unicode().tag(sync=True)
 
 
 @ipywidgets.register
@@ -197,23 +183,47 @@ class NodeInstanceModel(ipywidgets.Widget):
 
     @traitlets.default("display_element")
     def _default_display_element(self):
+        title = ipywidgets.Text()
+        traitlets.link((self, "title"), (title, "value"))
+        input_grid = ipywidgets.GridspecLayout(len(self.inputs) + 1, 2)
+        output_grid = ipywidgets.GridspecLayout(len(self.outputs) + 1, 2)
+        box = ipywidgets.VBox([title, input_grid, output_grid])
+
         def _update_inputs(event):
-            input_box.children = [ipywidgets.Label("Inputs")] + [
-                slot.widget() for slot in self.inputs
-            ]
+            input_grid = ipywidgets.GridspecLayout(len(self.inputs) + 1, 2)
+            input_grid[0, :] = ipywidgets.Label("Inputs")
+            for i, slot in enumerate(self.inputs):
+                input_grid[i + 1, 0], input_grid[i + 1, 1] = slot.widget()
+            box.children = box.children[:1] + (input_grid,) + box.children[2:]
 
         def _update_outputs(event):
-            output_box.children = [ipywidgets.Label("Outputs")] + [
-                slot.widget() for slot in self.outputs
-            ]
+            output_grid = ipywidgets.GridspecLayout(len(self.outputs) + 1, 2)
+            output_grid[0, :] = ipywidgets.Label("Outputs")
+            for i, slot in enumerate(self.outputs):
+                output_grid[i + 1, 0], output_grid[i + 1, 1] = slot.widget()
+            box.children = box.children[:2] + (output_grid,)
 
-        label = ipywidgets.Label()
-        traitlets.link((self, "title"), (label, "value"))
         self.observe(_update_inputs, ["inputs"])
         self.observe(_update_outputs, ["outputs"])
-        input_box = ipywidgets.VBox([ipywidgets.Label("Inputs")])
-        output_box = ipywidgets.VBox([ipywidgets.Label("Outputs")])
-        return ipywidgets.VBox([label, input_box, output_box])
+        return box
+
+
+@ipywidgets.register
+class ConnectionModel(ipywidgets.Widget):
+    _model_name = traitlets.Unicode("ReteConnectionModel").tag(sync=True)
+    _model_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
+    _model_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
+    _view_name = traitlets.Unicode("ReteConnectionView").tag(sync=True)
+    _view_module = traitlets.Unicode("jupyterlab_nodeeditor").tag(sync=True)
+    _view_module_version = traitlets.Unicode(EXTENSION_VERSION).tag(sync=True)
+    source_node = traitlets.Instance(NodeInstanceModel, allow_none=True).tag(
+        sync=True, **ipywidgets.widget_serialization
+    )
+    source_key = traitlets.Unicode(allow_none=True).tag(sync=True)
+    destination_node = traitlets.Instance(NodeInstanceModel, allow_none=True).tag(
+        sync=True, **ipywidgets.widget_serialization
+    )
+    destination_key = traitlets.Unicode(allow_none=True).tag(sync=True)
 
 
 @ipywidgets.register
@@ -275,17 +285,26 @@ class NodeEditor(traitlets.HasTraits):
         return SocketCollection()
 
     def _ipython_display_(self):
-        tabs = ipywidgets.Tab()
+        accordion = ipywidgets.Accordion()
 
         def update_nodes(change):
-            tabs.children = [node.display_element for node in change["new"]]
+            accordion.children = [node.display_element for node in change["new"]]
             for i, node in enumerate(change["new"]):
-                tabs.set_title(i, f"Node {i+1} - {node.title}")
+                accordion.set_title(i, f"Node {i+1} - {node.title}")
 
         def update_selected(change):
-            tabs.selected_index = self.node_editor.nodes.index(change["new"])
+            accordion.selected_index = self.node_editor.nodes.index(change["new"])
 
+        update_nodes({"new": self.node_editor.nodes})
         self.node_editor.observe(update_nodes, ["nodes"])
         self.node_editor.observe(update_selected, ["selected_node"])
-
-        display(ipywidgets.HBox([self.node_editor, tabs]))
+        app_layout = ipywidgets.AppLayout(
+            header=ipywidgets.Label("Node Editor"),
+            left_sidebar=None,
+            center=self.node_editor,
+            right_sidebar=accordion,
+            footer=None,
+            pane_heights=[1, "500px", 1],
+            pane_widths=[1, 10, "300px"],
+        )
+        display(app_layout)

@@ -631,34 +631,47 @@ export class ReteEditorView extends DOMWidgetView {
     const newConns: ReteConnectionModel[] = model.get('connections');
     for (const remConn of oldConns.filter(_ => !newConns.includes(_))) {
       // These are instances, so we match based on keys
+      console.log('Removing old connection', remConn);
       this.editor.removeConnection(remConn._connection);
     }
     for (const newConn of newConns.filter(_ => !oldConns.includes(_))) {
+      console.log('Found a new connection', newConn);
       if (newConn._connection === undefined) {
         // We need to get our connections list and then look at the difference.
+
+        const connData: { [key: string]: unknown } = {};
+        connData['connectionModel'] = newConn;
         const sourceNode = newConn.source_node._node;
         const destNode = newConn.destination_node._node;
         const initialConnections: Rete.Connection[] =
           sourceNode.getConnections();
         this.editor.connect(
           sourceNode.outputs.get(newConn.source_key),
-          destNode.inputs.get(newConn.destination_key)
+          destNode.inputs.get(newConn.destination_key),
+          connData
         );
         const finalConnections: Rete.Connection[] = sourceNode.getConnections();
-        const intersection = initialConnections.filter(x =>
-          finalConnections.includes(x)
+        const newlyAdded = finalConnections.filter(
+          x => !initialConnections.includes(x)
         );
-        if (intersection.length !== 1) {
+        if (newlyAdded.length !== 1) {
           console.log('Initial:', initialConnections);
           console.log('Final:', finalConnections);
-          console.log('Intersection:', intersection);
+          console.log('Intersection:', newlyAdded);
         }
-        newConn._connection = intersection[0];
+        newConn._connection = newlyAdded[0];
       }
     }
   }
 
   async createConnection(connection: Rete.Connection): Promise<void> {
+    if (
+      (connection.data as { [key: string]: unknown })['connectionModel'] !==
+      undefined
+    ) {
+      console.log('This connection has already been mirrored.');
+      return;
+    }
     console.log('Created_Connection ', connection); //this will return value
     console.log('Create_Connection_Input ', connection.input);
     const manager = this.model.widget_manager;
@@ -671,6 +684,9 @@ export class ReteEditorView extends DOMWidgetView {
       view_module_version: ReteConnectionModel.view_module_version
     })) as ReteConnectionModel;
     newConnection._connection = connection;
+    (connection.data as { [key: string]: unknown }) = {
+      connectionModel: newConnection
+    };
     console.log('Created_Connection ', connection); //this will not return value
     console.log('Create_Connection_Input ', connection.input);
     console.log('output', connection.output.node.meta);

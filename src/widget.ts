@@ -633,14 +633,29 @@ export class ReteEditorView extends DOMWidgetView {
       // These are instances, so we match based on keys
       this.editor.removeConnection(remConn._connection);
     }
-    // for (const newConn of newConns.filter(_ => !oldConns.includes(_))) {
-    //   if (newConn._connection === undefined) {
-    //     newConn._connection = new Rete.Connection(
-    //       newConn.source.getInstance(),
-    //       newConn.destination.getInstance()
-    //     );
-    //   }
-    // }
+    for (const newConn of newConns.filter(_ => !oldConns.includes(_))) {
+      if (newConn._connection === undefined) {
+        // We need to get our connections list and then look at the difference.
+        const sourceNode = newConn.source_node._node;
+        const destNode = newConn.destination_node._node;
+        const initialConnections: Rete.Connection[] =
+          sourceNode.getConnections();
+        this.editor.connect(
+          sourceNode.outputs.get(newConn.source_key),
+          destNode.inputs.get(newConn.destination_key)
+        );
+        const finalConnections: Rete.Connection[] = sourceNode.getConnections();
+        const intersection = initialConnections.filter(x =>
+          finalConnections.includes(x)
+        );
+        if (intersection.length !== 1) {
+          console.log('Initial:', initialConnections);
+          console.log('Final:', finalConnections);
+          console.log('Intersection:', intersection);
+        }
+        newConn._connection = intersection[0];
+      }
+    }
   }
 
   async createConnection(connection: Rete.Connection): Promise<void> {

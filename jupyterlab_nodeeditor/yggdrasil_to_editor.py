@@ -13,7 +13,7 @@ def yml_trans(filename, text_only=False, show_instance=False):
     coll = jlne.SocketCollection(socket_types=socket_types)
     model_set = yamlfile.parse_yaml(filename, model_only=True)
     editor = jlne.NodeEditor(socket_collection=coll)
-    comps, instances = transform(model_set, coll, editor)
+    comps, instances, conns = transform(model_set, coll, editor)
 
     if text_only:
         return comps
@@ -22,7 +22,9 @@ def yml_trans(filename, text_only=False, show_instance=False):
             editor.add_component(comp)
     if show_instance:
         for instance in instances:
-            editor.add_instance(instance)
+            editor.node_editor.nodes=editor.node_editor.nodes+[instance]
+        for conn in conns:
+            editor.node_editor.connections=editor.node_editor.connections+[conn]
     return editor
 
 
@@ -30,6 +32,7 @@ def transform(model_set, coll, editor):
     all_comps = []
     all_instances = []
     model_id = 1
+    inst_dict={}
     for model in model_set["models"]:
         args = model["args"]
         model_name = model["name"]
@@ -56,6 +59,8 @@ def transform(model_set, coll, editor):
         output_parm = 1
         input_ls = []
         output_ls = []
+        ports_dict={} ## store all the port name and key for connection purpose
+        
         for input_ in inputs:
             locals()["int_{}".format(input_param)] = jlne.InputSlot(
                 title=input_,
@@ -63,6 +68,7 @@ def transform(model_set, coll, editor):
                 sockets=coll,
                 multi_connection=True,
             )
+            ports_dict[input_]="int_{}".format(input_param)
             input_ls.append(locals()["int_{}".format(input_param)])
             input_param = input_param + 1
 
@@ -73,6 +79,7 @@ def transform(model_set, coll, editor):
                 sockets=coll,
                 multi_connection=True,
             )
+            ports_dict[output_]="out_{}".format(output_parm)
             output_ls.append(locals()["out_{}".format(output_parm)])
             output_parm = output_parm + 1
 
@@ -98,9 +105,101 @@ def transform(model_set, coll, editor):
             controls=[contrl1],
         )
         all_instances.append(locals()["inst_{}".format(model_id)])
+        ports_dict["node_inst"]=locals()["inst_{}".format(model_id)]
+        inst_dict[model_name]=ports_dict
         model_id = model_id + 1
-
-    return all_comps, all_instances
+        
+    all_conns=[]
+    for conn in model_set["connections"]:
+            src_model=conn['src_models']
+            
+            if src_model==[]:
+                file_add=conn['inputs'][0]["name"]
+                out1 = jlne.OutputSlot(
+                    title = "load_file", 
+                    key = "out_1", 
+                    sockets = coll,
+                    multi_connection=True)
+                contrl1=jlne.TextInputControlModel(
+                    key = 'my_key', 
+                    editor = editor.node_editor, 
+                    value=file_add)
+                input_file_comp=jlne.Component(
+                    sockets=coll, 
+                    outputs=[out1], 
+                    controls=[contrl1],
+                    title="Input_File")
+                input_file_inst=jlne.node_editor.NodeInstanceModel(
+                    sockets=coll,
+                    title="Input_File", 
+                    outputs=[out1], 
+                    controls=[contrl1])
+                
+                all_comps.append(input_file_comp)
+                all_instances.append(input_file_inst)
+                
+                ## for building connections (source_node, no existing comp)
+                src_model=input_file_inst
+                src_key="out_1"
+            
+            else:
+                src_model_name=conn['src_models'][0]
+                src_port=conn["inputs"][0]["name"].split(":")[1]
+                
+                ## for building connections (source_node, existed comp)
+                src_model=inst_dict[src_model_name]["node_inst"]
+                src_key=inst_dict[src_model_name][src_port]
+            
+            
+            dst_model=conn['dst_models']
+            
+            if dst_model==[]:
+                file_add=conn['outputs'][0]["name"]
+                in1 = jlne.InputSlot(
+                    title = "export_file", 
+                    key = "in_1", 
+                    sockets = coll,
+                    multi_connection=True)
+                contrl1=jlne.TextInputControlModel(
+                    key = 'my_key', 
+                    editor = editor.node_editor, 
+                    value=file_add)
+                export_file_comp=jlne.Component(
+                    sockets=coll, 
+                    inputs=[in1],
+                    controls=[contrl1],
+                    title="Export_File")
+                export_file_inst=jlne.node_editor.NodeInstanceModel(
+                    sockets=coll,
+                    title="Export_File", 
+                    inputs=[in1],
+                    controls=[contrl1])
+                
+                all_comps.append(export_file_comp)
+                all_instances.append(export_file_inst)
+                
+                ## for building connections (source_node, no existing comp)
+                dst_model=export_file_inst
+                dst_key="in_1"
+            
+            else:
+                dst_model_name=conn['dst_models'][0]
+                dst_port=conn["outputs"][0]["name"].split(":")[1]
+                
+                ## for building connections (source_node, existed comp)
+                dst_model=inst_dict[dst_model_name]["node_inst"]
+                dst_key=inst_dict[dst_model_name][dst_port]
+            
+            new_connection=jlne.node_editor.ConnectionModel(
+                source_node=src_model, 
+                source_key=src_key, 
+                destination_node=dst_model, 
+                destination_key=dst_key) 
+            all_conns.append(new_connection)
+          
+    
+    # print(inst_dict)
+    return all_comps, all_instances, all_conns
 
 
 def parse_editor_config(py_models_dict, editor_json):

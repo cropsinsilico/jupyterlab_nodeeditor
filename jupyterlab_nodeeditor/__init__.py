@@ -47,6 +47,7 @@ def _initialize_hotfix():
 
 from .node_editor import (
     Component,
+    ConnectionModel,
     DropDownInputControlModel,
     InputSlot,
     NodeEditor,

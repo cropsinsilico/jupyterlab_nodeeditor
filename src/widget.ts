@@ -741,6 +741,10 @@ export class ReteEditorView extends DOMWidgetView {
     )) as ReteNodeModel;
     newNode._node = node;
     node.meta.nodeModel = newNode;
+    newNode.set('inputs', node.meta.inputSlots);
+    newNode.set('outputs', node.meta.outputSlots);
+    newNode.set('controls', node.meta.controls);
+    newNode.save();
     const newNodes: ReteNodeModel[] = (
       this.model.get('nodes') as ReteNodeModel[]
     ).concat([newNode]);

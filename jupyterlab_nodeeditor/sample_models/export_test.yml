@@ -1,37 +1,18 @@
 models:
-- args: ./src/modelA.py
-  language: python
-  name: modelA
-  outputs:
-  - name: modelA:outputA
-- args: ./src/modelB.py
+- name: python_modelA
   inputs:
-  - name: modelB:inputB
-  language: python
-  name: modelB
+  - name: python_modelA:inputA
   outputs:
-  - name: modelB:outputB
-- args: ./src/photosynthesis.py
+  - name: python_modelA:outputA
+  language: python
+  args: ./src/gs_lesson4_modelA.py
+- name: python_modelB
   inputs:
-  - name: PhotosynthesisModel:light_intensity
-  - name: PhotosynthesisModel:temperature
-  - name: PhotosynthesisModel:co2
-  language: python
-  name: PhotosynthesisModel
+  - name: python_modelB:inputB
   outputs:
-  - name: PhotosynthesisModel:photosynthesis_rate
-- args: ./src/modelC.py
-  inputs:
-  - name: modelC:inputC
+  - name: python_modelB:outputB
   language: python
-  name: modelC
-- args: ./src/modelA.py
-  language: python
-  name: modelA1
-  outputs:
-  - name: modelA1:outputA
-- args: ./src/modelA.py
-  language: python
-  name: modelAAAA
-  outputs:
-  - name: modelAAAA:outputA
+  args: ./src/gs_lesson4_modelB.py
+connections:
+- input: python_modelA:outputA
+  output: python_modelB:inputB

@@ -541,7 +541,8 @@ export class ReteEditorView extends DOMWidgetView {
     this.editor.on(['nodetranslated'], async () => {
       this.model.updateViews();
     });
-    this.editor.on(['noderemoved'], async () => {
+    this.editor.on(['noderemoved'], async (node: Rete.Node) => {
+      await this.removeNode(node);
       this.model.updateViews();
     });
     this.editor.on(['nodeselected'], async (node: Rete.Node) => {
@@ -642,7 +643,9 @@ export class ReteEditorView extends DOMWidgetView {
     const newNodes: ReteNodeModel[] = model.get('nodes');
     for (const remNode of oldNodes.filter(_ => !newNodes.includes(_))) {
       // These are instances, so we match based on keys
-      this.editor.removeNode(remNode._node);
+      if (this.editor.nodes.includes(remNode._node)) {
+        this.editor.removeNode(remNode._node);
+      }
     }
     for (const newNode of newNodes.filter(_ => !oldNodes.includes(_))) {
       if (newNode._node === undefined) {
@@ -780,6 +783,19 @@ export class ReteEditorView extends DOMWidgetView {
     const newNodes: ReteNodeModel[] = (
       this.model.get('nodes') as ReteNodeModel[]
     ).concat([newNode]);
+    this.model.set('nodes', newNodes);
+    await this.model.save();
+  }
+
+  async removeNode(node: Rete.Node): Promise<void> {
+    if (!node.meta.nodeModel) {
+      return;
+    }
+    const nModel: ReteNodeModel = node.meta.nodeModel as ReteNodeModel;
+    const oldNodes: ReteNodeModel[] = this.model.get(
+      'nodes'
+    ) as ReteNodeModel[];
+    const newNodes = oldNodes.filter(n => n.model_id !== nModel.model_id);
     this.model.set('nodes', newNodes);
     await this.model.save();
   }

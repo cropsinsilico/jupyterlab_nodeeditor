@@ -1,6 +1,7 @@
 import jupyterlab_nodeeditor as jlne
 from yggdrasil import yamlfile
 import yaml
+# import time
 
 
 def yml_trans(filename, text_only=False, show_instance=False):
@@ -246,7 +247,6 @@ def parse_editor_config(py_models_dict, editor_json):
 def editor_yaml(editor, address):
     editor.node_editor.sync_config()
     editor_json = editor.node_editor.editorConfig
-    # print(editor_json)
     editor_py = editor.node_editor.nodes
     editor_py_conn = editor.node_editor.connections
 
@@ -278,11 +278,11 @@ def editor_yaml(editor, address):
         conn_ls = []
         for conn in range(len(editor_py_conn)):
             single_conn = dict()
-            input_model_name = editor_py_conn[0].source_node.title
+            input_model_name = editor_py_conn[conn].source_node.title
             input_port_name = editor_py_conn[conn].source_node.outputs[0].title
             single_conn["input"] = input_model_name + ":" + input_port_name
 
-            output_model_name = editor_py_conn[0].destination_node.title
+            output_model_name = editor_py_conn[conn].destination_node.title
             output_port_name = editor_py_conn[conn].destination_node.inputs[0].title
             single_conn["output"] = output_model_name + ":" + output_port_name
             conn_ls.append(single_conn)

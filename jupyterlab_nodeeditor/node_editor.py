@@ -6,6 +6,9 @@ from IPython.display import display
 
 from ._version import __version__
 
+import pythreejs
+import numpy as np
+
 EXTENSION_VERSION = "~" + __version__
 
 
@@ -187,7 +190,8 @@ class NodeInstanceModel(ipywidgets.Widget):
         traitlets.link((self, "title"), (title, "value"))
         input_grid = ipywidgets.GridspecLayout(len(self.inputs) + 1, 2)
         output_grid = ipywidgets.GridspecLayout(len(self.outputs) + 1, 2)
-        box = ipywidgets.VBox([title, input_grid, output_grid])
+        threejs_grid = ipywidgets.GridspecLayout(len(self.controls) + 1, 2)
+        box = ipywidgets.VBox([title, input_grid, output_grid, threejs_grid])
 
         def _update_inputs(event):
             input_grid = ipywidgets.GridspecLayout(len(self.inputs) + 1, 2)
@@ -201,10 +205,75 @@ class NodeInstanceModel(ipywidgets.Widget):
             output_grid[0, :] = ipywidgets.Label("Outputs")
             for i, slot in enumerate(self.outputs):
                 output_grid[i + 1, 0], output_grid[i + 1, 1] = slot.widget()
-            box.children = box.children[:2] + (output_grid,)
+            box.children = box.children[:2] + (output_grid,) + box.children[3:]
+
+        def _update_threejs(event):
+            threejs_grid = ipywidgets.GridspecLayout(len(self.controls) + 1, 2)
+            file_add = self.controls[0].value
+            rendererCube = _threejs_vis(file_add)
+            threejs_grid[2, 1] = ipywidgets.HBox([rendererCube])
+            box.children = box.children[:3] + (threejs_grid,)
+
+        def _threejs_vis(file_add):
+            with open(file_add, "r") as f:
+                while f.readline().strip() != "end_header":
+                    pass
+                vertices = np.zeros((7068, 3), dtype="f4")  # need to revise
+                indices = np.zeros((8584, 3), dtype="u4")   # need to revise
+                vertexcolors = np.zeros((vertices.shape[0], 3), dtype="float32")
+
+                for i in range(7068):
+                    v = f.readline().split()
+                    vertices[i, :] = v[:3]
+                    vertexcolors[i, :] = v[3:]
+                for i in range(8584):
+                    indices[i, :] = f.readline().split()[-3:]
+            vertexcolors /= 255.0
+            plantgeometry = pythreejs.BufferGeometry(
+                attributes=dict(
+                    position=pythreejs.BufferAttribute(vertices, normalized=False),
+                    index=pythreejs.BufferAttribute(
+                        indices.ravel(order="C"), normalized=False
+                    ),
+                    color=pythreejs.BufferAttribute(vertexcolors),
+                )
+            )
+            plantgeometry.exec_three_obj_method("computeFaceNormals")
+            mat = pythreejs.MeshStandardMaterial(
+                vertexColors="VertexColors", side="DoubleSide"
+            )
+            myobjectCube = pythreejs.Mesh(
+                geometry=plantgeometry,
+                material=mat,
+                position=[0, 0, 0],  # Center the cube
+            )
+            cCube = pythreejs.PerspectiveCamera(
+                position=[25, 35, 100],
+                fov=20,
+                children=[
+                    pythreejs.DirectionalLight(
+                        color="#ffffff", position=[100, 100, 100], intensity=0.5
+                    )
+                ],
+            )
+            sceneCube = pythreejs.Scene(
+                children=[myobjectCube, cCube, pythreejs.AmbientLight(color="#dddddd")]
+            )
+
+            rendererCube = pythreejs.Renderer(
+                camera=cCube,
+                background="white",
+                background_opacity=1,
+                scene=sceneCube,
+                controls=[pythreejs.OrbitControls(controlling=cCube)],
+                width=800,
+                height=800,
+            )
+            return rendererCube
 
         self.observe(_update_inputs, ["inputs"])
         self.observe(_update_outputs, ["outputs"])
+        self.observe(_update_threejs, ["controls"])
         return box
 
 

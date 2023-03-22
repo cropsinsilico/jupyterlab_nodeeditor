@@ -211,7 +211,7 @@ class NodeInstanceModel(ipywidgets.Widget):
             threejs_grid = ipywidgets.GridspecLayout(len(self.controls) + 1, 2)
             file_add = self.controls[0].value
             rendererCube = _threejs_vis(file_add)
-            threejs_grid[2, 1] = ipywidgets.HBox([rendererCube])
+            threejs_grid[0, :] = ipywidgets.HBox([rendererCube])
             box.children = box.children[:3] + (threejs_grid,)
 
         def _threejs_vis(file_add):

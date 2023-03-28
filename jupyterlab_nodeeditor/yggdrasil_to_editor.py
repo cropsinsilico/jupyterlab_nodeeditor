@@ -1,6 +1,7 @@
 import jupyterlab_nodeeditor as jlne
 from yggdrasil import yamlfile
 import yaml
+
 # import time
 
 
@@ -248,7 +249,7 @@ def editor_yaml(editor, address):
     editor.node_editor.sync_config()
     editor_json = editor.node_editor.editorConfig
     editor_py = editor.node_editor.nodes
-    editor_py_conn = editor.node_editor.connections
+    # editor_py_conn = editor.node_editor.connections
 
     if editor_py == []:
         return "No component/instance has been detected in the workspace"
@@ -267,6 +268,7 @@ def editor_yaml(editor, address):
                 node_id = list(
                     editor_py[0].controls[0].editor.editorConfig["nodes"].keys()
                 )[model_pos]
+                nodes_info = editor_json["nodes"]
             else:
                 node_id = list(
                     editor_py[0]
@@ -274,25 +276,96 @@ def editor_yaml(editor, address):
                     .editor.editorConfig[jupyter_id]["nodes"]
                     .keys()
                 )[model_pos]
+                nodes_info = editor_json[jupyter_id]["nodes"]
             py_models_dict[node_id] = single_model
-        conn_ls = []
-        for conn in range(len(editor_py_conn)):
-            single_conn = dict()
-            input_model_name = editor_py_conn[conn].source_node.title
-            input_port_name = editor_py_conn[conn].source_node.outputs[0].title
-            single_conn["input"] = input_model_name + ":" + input_port_name
 
-            output_model_name = editor_py_conn[conn].destination_node.title
-            output_port_name = editor_py_conn[conn].destination_node.inputs[0].title
-            single_conn["output"] = output_model_name + ":" + output_port_name
-            conn_ls.append(single_conn)
+        # store all the information about model name and their corresponding ports (id+name)
+        node_id_ls = nodes_info.keys()
+        all_models = dict()
+        for model_id in range(len(editor_py)):
+            model_name = editor_py[model_id].title
+            in_ports = dict()
+            inputs_ls = editor_py[model_id].inputs
+            for input_port in inputs_ls:
+                in_ports[input_port.key] = input_port.title
+
+            out_ports = dict()
+            outputs_ls = editor_py[model_id].outputs
+            for output_port in outputs_ls:
+                out_ports[output_port.key] = output_port.title
+
+            all_models[model_name] = in_ports
+            all_models[model_name]["outputs"] = out_ports
+
+        # extract all the connections
+        conn_ls = []
+        for node_id in node_id_ls:
+            input_ports = nodes_info[node_id]["inputs"].keys()
+            output_ports = nodes_info[node_id]["outputs"].keys()
+
+            for input_port in input_ports:
+                connect_in_port = nodes_info[node_id]["inputs"][input_port][
+                    "connections"
+                ]
+                if len(connect_in_port) >= 1:
+                    single_conn = dict()
+                    source_node_id = str(connect_in_port[0]["node"])
+                    source_node_name = py_models_dict[source_node_id]["model_name"]
+                    source_node_output_id = connect_in_port[0]["output"]
+                    source_node_output_name = all_models[source_node_name]["outputs"][
+                        source_node_output_id
+                    ]
+
+                    destination_node_name = py_models_dict[node_id]["model_name"]
+                    destination_input_name = all_models[destination_node_name][
+                        input_port
+                    ]
+
+                    single_conn["input"] = (
+                        source_node_name + ":" + source_node_output_name
+                    )
+                    single_conn["output"] = (
+                        destination_node_name + ":" + destination_input_name
+                    )
+                    if single_conn not in conn_ls:
+                        conn_ls.append(single_conn)
+                    else:
+                        continue
+
+            for output_port in output_ports:
+                connect_out_port = nodes_info[node_id]["outputs"][output_port][
+                    "connections"
+                ]
+                if len(connect_out_port) >= 1:
+                    single_conn = dict()
+                    dest_node_id = str(connect_out_port[0]["node"])
+
+                    source_node_name = py_models_dict[node_id]["model_name"]
+                    source_node_output_id = output_port
+                    source_node_output_name = all_models[source_node_name]["outputs"][
+                        source_node_output_id
+                    ]
+
+                    destination_node_name = py_models_dict[dest_node_id]["model_name"]
+                    destination_input_name = all_models[destination_node_name][
+                        connect_out_port[0]["input"]
+                    ]
+                    single_conn["input"] = (
+                        source_node_name + ":" + source_node_output_name
+                    )
+                    single_conn["output"] = (
+                        destination_node_name + ":" + destination_input_name
+                    )
+                    if single_conn not in conn_ls:
+                        conn_ls.append(single_conn)
+                    else:
+                        continue
 
         # print(py_models_dict)
         yml_dict = {}  # the keywords for yml_dict include "models" and "connections"
         model_ls = parse_editor_config(py_models_dict, editor_json)
         yml_dict["models"] = model_ls
         yml_dict["connections"] = conn_ls
-        # print(yml_dict)
 
         stream = open(address, "w")
         yaml.dump(yml_dict, stream, sort_keys=False)

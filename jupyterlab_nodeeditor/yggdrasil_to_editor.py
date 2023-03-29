@@ -113,9 +113,12 @@ def transform(model_set, coll, editor):
 
     all_conns = []
     for conn in model_set["connections"]:
-        src_model = conn["src_models"]
+        # print(conn)
+        src_model_ls = conn["src_models"]
 
-        if src_model == []:
+        if src_model_ls == []:
+            scr_models = []
+            scr_model_info = {}
             file_add = conn["inputs"][0]["name"]
             out1 = jlne.OutputSlot(
                 title="load_file", key="out_1", sockets=coll, multi_connection=True
@@ -136,18 +139,26 @@ def transform(model_set, coll, editor):
             ## for building connections (source_node, no existing comp)
             src_model = input_file_inst
             src_key = "out_1"
+            scr_model_info["source_node"] = src_model
+            scr_model_info["source_key"] = src_key
+            scr_models.append(scr_model_info)
 
         else:
-            src_model_name = conn["src_models"][0]
-            src_port = conn["inputs"][0]["name"].split(":")[1]
+            scr_models = []
+            for src_model_id in range(len(src_model_ls)):
+                scr_model_info = {}
+                src_model_name = conn["src_models"][src_model_id]
+                src_port = conn["inputs"][src_model_id]["name"].split(":")[1]
+                src_model = inst_dict[src_model_name]["node_inst"]
+                src_key = inst_dict[src_model_name][src_port]
+                scr_model_info["source_node"] = src_model
+                scr_model_info["source_key"] = src_key
+                scr_models.append(scr_model_info)
 
-            ## for building connections (source_node, existed comp)
-            src_model = inst_dict[src_model_name]["node_inst"]
-            src_key = inst_dict[src_model_name][src_port]
-
-        dst_model = conn["dst_models"]
-
-        if dst_model == []:
+        dst_model_ls = conn["dst_models"]
+        if dst_model_ls == []:
+            dst_models = []
+            dst_model_info = {}
             file_add = conn["outputs"][0]["name"]
             in1 = jlne.InputSlot(
                 title="export_file", key="in_1", sockets=coll, multi_connection=True
@@ -168,24 +179,31 @@ def transform(model_set, coll, editor):
             ## for building connections (source_node, no existing comp)
             dst_model = export_file_inst
             dst_key = "in_1"
+            dst_model_info["destination_node"] = dst_model
+            dst_model_info["destination_key"] = dst_key
+            dst_models.append(dst_model_info)
 
         else:
-            dst_model_name = conn["dst_models"][0]
-            dst_port = conn["outputs"][0]["name"].split(":")[1]
+            dst_models = []
+            for dst_model_id in range(len(dst_model_ls)):
+                dst_model_info = {}
+                dst_model_name = conn["dst_models"][0]
+                dst_port = conn["outputs"][0]["name"].split(":")[1]
+                dst_model = inst_dict[dst_model_name]["node_inst"]
+                dst_key = inst_dict[dst_model_name][dst_port]
+                dst_model_info["destination_node"] = dst_model
+                dst_model_info["destination_key"] = dst_key
+                dst_models.append(dst_model_info)
 
-            ## for building connections (source_node, existed comp)
-            dst_model = inst_dict[dst_model_name]["node_inst"]
-            dst_key = inst_dict[dst_model_name][dst_port]
-
-        new_connection = jlne.node_editor.ConnectionModel(
-            source_node=src_model,
-            source_key=src_key,
-            destination_node=dst_model,
-            destination_key=dst_key,
-        )
-        all_conns.append(new_connection)
-
-    # print(inst_dict)
+        for src_model in scr_models:
+            for dst_model in dst_models:
+                new_connection = jlne.node_editor.ConnectionModel(
+                    source_node=src_model["source_node"],
+                    source_key=src_model["source_key"],
+                    destination_node=dst_model["destination_node"],
+                    destination_key=dst_model["destination_key"],
+                )
+                all_conns.append(new_connection)
     return all_comps, all_instances, all_conns
 
 
@@ -245,11 +263,20 @@ def parse_editor_config(py_models_dict, editor_json):
     return model_ls
 
 
+def merge_list_of_dictionaries(dict_list):
+    new_dict = {}
+    for d in dict_list:
+        for d_key in d:
+            if d_key not in new_dict:
+                new_dict[d_key] = []
+            new_dict[d_key].append(d[d_key])
+    return new_dict
+
+
 def editor_yaml(editor, address):
     editor.node_editor.sync_config()
     editor_json = editor.node_editor.editorConfig
     editor_py = editor.node_editor.nodes
-    # editor_py_conn = editor.node_editor.connections
 
     if editor_py == []:
         return "No component/instance has been detected in the workspace"
@@ -299,69 +326,74 @@ def editor_yaml(editor, address):
 
         # extract all the connections
         conn_ls = []
+        temp_conn_ls = []
         for node_id in node_id_ls:
-            input_ports = nodes_info[node_id]["inputs"].keys()
+            # input_ports = nodes_info[node_id]["inputs"].keys()
             output_ports = nodes_info[node_id]["outputs"].keys()
 
-            for input_port in input_ports:
-                connect_in_port = nodes_info[node_id]["inputs"][input_port][
-                    "connections"
-                ]
-                if len(connect_in_port) >= 1:
-                    single_conn = dict()
-                    source_node_id = str(connect_in_port[0]["node"])
-                    source_node_name = py_models_dict[source_node_id]["model_name"]
-                    source_node_output_id = connect_in_port[0]["output"]
-                    source_node_output_name = all_models[source_node_name]["outputs"][
-                        source_node_output_id
-                    ]
+            # for input_port in input_ports:
+            #     connect_in_port = nodes_info[node_id]["inputs"][input_port][
+            #         "connections"
+            #     ]
+            #     if len(connect_in_port) >= 1:
+            #         temp_source_ports = []
+            #         for in_port_num in range(len(connect_in_port)):
+            #             source_node_id = str(connect_in_port[in_port_num]["node"])
+            #             source_node_name = py_models_dict[source_node_id]["model_name"]
+            #             source_node_output_id = connect_in_port[in_port_num]["output"]
+            #             source_node_output_name = all_models[source_node_name][
+            #                 "outputs"
+            #             ][source_node_output_id]
+            #             temp_source_ports.append(
+            #                 source_node_name + ":" + source_node_output_name
+            #             )
 
-                    destination_node_name = py_models_dict[node_id]["model_name"]
-                    destination_input_name = all_models[destination_node_name][
-                        input_port
-                    ]
+            #         destination_node_name = py_models_dict[node_id]["model_name"]
+            #         destination_input_name = all_models[destination_node_name][
+            #             input_port
+            #         ]
 
-                    single_conn["input"] = (
-                        source_node_name + ":" + source_node_output_name
-                    )
-                    single_conn["output"] = (
-                        destination_node_name + ":" + destination_input_name
-                    )
-                    if single_conn not in conn_ls:
-                        conn_ls.append(single_conn)
-                    else:
-                        continue
+            #         conn_inputs = temp_source_ports
+            #         conn_output = destination_node_name + ":" + destination_input_name
+
+            #         for conn_input in conn_inputs:
+            #             new_conn = {conn_input: conn_output}
+            #             if new_conn not in conn_ls:
+            #                 conn_ls.append(new_conn)
 
             for output_port in output_ports:
                 connect_out_port = nodes_info[node_id]["outputs"][output_port][
                     "connections"
                 ]
                 if len(connect_out_port) >= 1:
-                    single_conn = dict()
-                    dest_node_id = str(connect_out_port[0]["node"])
-
+                    temp_dst_port = []
+                    for out_port_num in range(len(connect_out_port)):
+                        dest_node_id = str(connect_out_port[out_port_num]["node"])
+                        destination_node_name = py_models_dict[dest_node_id][
+                            "model_name"
+                        ]
+                        destination_input_name = all_models[destination_node_name][
+                            connect_out_port[out_port_num]["input"]
+                        ]
+                        temp_dst_port.append(
+                            destination_node_name + ":" + destination_input_name
+                        )
                     source_node_name = py_models_dict[node_id]["model_name"]
                     source_node_output_id = output_port
                     source_node_output_name = all_models[source_node_name]["outputs"][
                         source_node_output_id
                     ]
 
-                    destination_node_name = py_models_dict[dest_node_id]["model_name"]
-                    destination_input_name = all_models[destination_node_name][
-                        connect_out_port[0]["input"]
-                    ]
-                    single_conn["input"] = (
-                        source_node_name + ":" + source_node_output_name
-                    )
-                    single_conn["output"] = (
-                        destination_node_name + ":" + destination_input_name
-                    )
-                    if single_conn not in conn_ls:
-                        conn_ls.append(single_conn)
-                    else:
-                        continue
+                    conn_input = source_node_name + ":" + source_node_output_name
+                    conn_outputs = temp_dst_port
 
-        # print(py_models_dict)
+                    for conn_output in conn_outputs:
+                        new_conn = {conn_output: conn_input}
+                        if new_conn not in temp_conn_ls:
+                            temp_conn_ls.append(new_conn)
+        conn_rm_dup = merge_list_of_dictionaries(temp_conn_ls)
+        for key, value in conn_rm_dup.items():
+            conn_ls.append({"inputs": value, "outputs": key})
         yml_dict = {}  # the keywords for yml_dict include "models" and "connections"
         model_ls = parse_editor_config(py_models_dict, editor_json)
         yml_dict["models"] = model_ls

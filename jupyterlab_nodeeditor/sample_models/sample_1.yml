@@ -16,3 +16,9 @@ models:
     language: python
     args: ./src/modelC.py
     inputs: inputC
+    
+connections:
+- inputs:
+    - modelA:outputA
+    - modelB:outputB
+  output: modelC:inputC

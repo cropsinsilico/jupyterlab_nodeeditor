@@ -23,7 +23,7 @@ models:
   language: python
   args: ./src/photosynthesis.py
 connections:
-- input: python_modelA:outputA
-  output: PhotosynthesisModel:light_intensity
-- input: python_modelB:outputB
-  output: PhotosynthesisModel:temperature
+- inputs:
+  - python_modelA:outputA
+  - python_modelB:outputB
+  outputs: PhotosynthesisModel:light_intensity

@@ -13,17 +13,13 @@ models:
   - name: python_modelB:outputB
   language: python
   args: ./src/gs_lesson4_modelB.py
-- name: PhotosynthesisModel
+- name: Export_File
   inputs:
-  - name: PhotosynthesisModel:light_intensity
-  - name: PhotosynthesisModel:temperature
-  - name: PhotosynthesisModel:co2
-  outputs:
-  - name: PhotosynthesisModel:photosynthesis_rate
+  - name: Export_File:export_file
   language: python
-  args: ./src/photosynthesis.py
+  args: ./output.txt
 connections:
-- inputs:
-  - python_modelA:outputA
-  - python_modelB:outputB
-  outputs: PhotosynthesisModel:light_intensity
+- inputs: python_modelA:outputA
+  outputs:
+  - python_modelB:inputB
+  - Export_File:export_file

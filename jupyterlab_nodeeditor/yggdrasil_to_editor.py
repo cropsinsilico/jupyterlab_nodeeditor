@@ -1,6 +1,7 @@
 import jupyterlab_nodeeditor as jlne
 from yggdrasil import yamlfile
 import yaml
+from collections import defaultdict
 
 # import time
 
@@ -187,8 +188,8 @@ def transform(model_set, coll, editor):
             dst_models = []
             for dst_model_id in range(len(dst_model_ls)):
                 dst_model_info = {}
-                dst_model_name = conn["dst_models"][0]
-                dst_port = conn["outputs"][0]["name"].split(":")[1]
+                dst_model_name = conn["dst_models"][dst_model_id]
+                dst_port = conn["outputs"][dst_model_id]["name"].split(":")[1]
                 dst_model = inst_dict[dst_model_name]["node_inst"]
                 dst_key = inst_dict[dst_model_name][dst_port]
                 dst_model_info["destination_node"] = dst_model
@@ -273,6 +274,14 @@ def merge_list_of_dictionaries(dict_list):
     return new_dict
 
 
+def merge_keys(d):
+    merged = defaultdict(list)
+    for k, v in d.items():
+        merged[v[0]].append(k)
+
+    return merged
+
+
 def editor_yaml(editor, address):
     editor.node_editor.sync_config()
     editor_json = editor.node_editor.editorConfig
@@ -328,38 +337,7 @@ def editor_yaml(editor, address):
         conn_ls = []
         temp_conn_ls = []
         for node_id in node_id_ls:
-            # input_ports = nodes_info[node_id]["inputs"].keys()
             output_ports = nodes_info[node_id]["outputs"].keys()
-
-            # for input_port in input_ports:
-            #     connect_in_port = nodes_info[node_id]["inputs"][input_port][
-            #         "connections"
-            #     ]
-            #     if len(connect_in_port) >= 1:
-            #         temp_source_ports = []
-            #         for in_port_num in range(len(connect_in_port)):
-            #             source_node_id = str(connect_in_port[in_port_num]["node"])
-            #             source_node_name = py_models_dict[source_node_id]["model_name"]
-            #             source_node_output_id = connect_in_port[in_port_num]["output"]
-            #             source_node_output_name = all_models[source_node_name][
-            #                 "outputs"
-            #             ][source_node_output_id]
-            #             temp_source_ports.append(
-            #                 source_node_name + ":" + source_node_output_name
-            #             )
-
-            #         destination_node_name = py_models_dict[node_id]["model_name"]
-            #         destination_input_name = all_models[destination_node_name][
-            #             input_port
-            #         ]
-
-            #         conn_inputs = temp_source_ports
-            #         conn_output = destination_node_name + ":" + destination_input_name
-
-            #         for conn_input in conn_inputs:
-            #             new_conn = {conn_input: conn_output}
-            #             if new_conn not in conn_ls:
-            #                 conn_ls.append(new_conn)
 
             for output_port in output_ports:
                 connect_out_port = nodes_info[node_id]["outputs"][output_port][
@@ -392,8 +370,10 @@ def editor_yaml(editor, address):
                         if new_conn not in temp_conn_ls:
                             temp_conn_ls.append(new_conn)
         conn_rm_dup = merge_list_of_dictionaries(temp_conn_ls)
-        for key, value in conn_rm_dup.items():
-            conn_ls.append({"inputs": value, "outputs": key})
+        merged_keys = merge_keys(conn_rm_dup)
+
+        for key, value in merged_keys.items():
+            conn_ls.append({"inputs": key, "outputs": value})
         yml_dict = {}  # the keywords for yml_dict include "models" and "connections"
         model_ls = parse_editor_config(py_models_dict, editor_json)
         yml_dict["models"] = model_ls

@@ -9,6 +9,8 @@ from ._version import __version__
 import pythreejs
 import numpy as np
 
+from ipylab import JupyterFrontEnd, Panel
+
 EXTENSION_VERSION = "~" + __version__
 
 
@@ -211,15 +213,25 @@ class NodeInstanceModel(ipywidgets.Widget):
             threejs_grid = ipywidgets.GridspecLayout(len(self.controls) + 1, 2)
             file_add = self.controls[0].value
             rendererCube = _threejs_vis(file_add)
-            threejs_grid[0, :] = ipywidgets.HBox([rendererCube])
+            button = ipywidgets.Button(description="Show ThreeJS")
+            threejs_grid[0, :] = ipywidgets.HBox([button])
             box.children = box.children[:3] + (threejs_grid,)
+
+            def _on_button_clicked(b):
+                app = JupyterFrontEnd()
+                panel = Panel()
+                panel.title.label = file_add
+                panel.children = [rendererCube]
+                app.shell.add(panel, "main", {"mode": "split-right"})
+
+            button.on_click(_on_button_clicked)
 
         def _threejs_vis(file_add):
             with open(file_add, "r") as f:
                 while f.readline().strip() != "end_header":
                     pass
                 vertices = np.zeros((7068, 3), dtype="f4")  # need to revise
-                indices = np.zeros((8584, 3), dtype="u4")   # need to revise
+                indices = np.zeros((8584, 3), dtype="u4")  # need to revise
                 vertexcolors = np.zeros((vertices.shape[0], 3), dtype="float32")
 
                 for i in range(7068):

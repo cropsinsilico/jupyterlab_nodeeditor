@@ -509,7 +509,6 @@ export class ReteEditorModel extends DOMWidgetModel {
   static view_module_version = MODULE_VERSION;
 }
 
-export class ReteConnectionModel extends DOMWidgetModel {}
 export class ReteEditorView extends DOMWidgetView {
   render(): void {
     this.el.classList.add('retejseditor');
@@ -543,10 +542,10 @@ export class ReteEditorView extends DOMWidgetView {
       `${MODULE_NAME}@${MODULE_VERSION}`,
       this.div
     );
-    this.editor.use(ReactRenderPlugin);
+    this.editor.use(VueRenderPlugin);
     this.editor.use(ConnectionPlugin);
     this.editor.use(ContextMenuPlugin);
-    this.editor.use(AutoArrangePlugin, { margin: { x: 25, y: 25 }, depth: 0 });
+    this.editor.use(AutoArrangePlugin, { margin: { x: 25, y: 25 }, depth: 1 });
     this.editor.register(defaultComponent);
     this.editor.on(['nodetranslated'], async () => {
       this.model.updateViews();

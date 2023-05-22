@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import * as Rete from 'rete';
-import {
+import type {
   NodeData,
   WorkerInputs,
   WorkerOutputs,
@@ -8,17 +8,17 @@ import {
 } from 'rete/types/core/data';
 import ConnectionPlugin from 'rete-connection-plugin';
 import ContextMenuPlugin from 'rete-context-menu-plugin';
-import ReactRenderPlugin from 'rete-react-render-plugin';
+import VueRenderPlugin from 'rete-vue-render-plugin';
 import AutoArrangePlugin from 'rete-auto-arrange-plugin';
 import {
   DOMWidgetModel,
   DOMWidgetView,
   uuid,
-  unpack_models,
-  ISerializers,
-  ManagerBase
+  unpack_models
 } from '@jupyter-widgets/base';
+import type { ISerializers } from '@jupyter-widgets/base';
 import { MODULE_NAME, MODULE_VERSION } from './version';
+import { ReteControlModel } from './controls';
 
 export class ReteSocketCollectionModel extends DOMWidgetModel {
   defaults(): any {
@@ -60,12 +60,70 @@ export class ReteSocketCollectionModel extends DOMWidgetModel {
   static model_module_version = MODULE_VERSION;
 }
 
+export class ReteConnectionModel extends DOMWidgetModel {
+  defaults(): any {
+    return {
+      ...super.defaults(),
+      source_node: null,
+      source_key: null,
+      destination_node: null,
+      destination_key: null,
+      _model_name: ReteConnectionModel.model_name,
+      _model_module: ReteConnectionModel.model_module,
+      _model_module_version: ReteConnectionModel.model_module_version,
+      _view_name: ReteConnectionModel.view_name,
+      _view_module: ReteConnectionModel.view_module,
+      _view_module_version: ReteConnectionModel.view_module_version
+    };
+  }
+
+  async initialize(attributes: any, options: any): Promise<void> {
+    super.initialize(attributes, options);
+    this.source_node = this.get('source_node');
+    this.source_key = this.get('source_key');
+    this.destination_node = this.get('destination_node');
+    this.destination_key = this.get('destination_key');
+  }
+
+  static serializers: ISerializers = {
+    ...DOMWidgetModel.serializers,
+    source_node: { deserialize: unpack_models },
+    destination_node: { deserialize: unpack_models }
+  };
+
+  _connection: Rete.Connection;
+  source_node: ReteNodeModel;
+  source_key: string;
+  destination_node: ReteNodeModel;
+  destination_key: string;
+  static model_name = 'ReteConnectionModel';
+  static model_module = MODULE_NAME;
+  static model_module_version = MODULE_VERSION;
+  static view_name = 'ReteConnectionView';
+  static view_module = MODULE_NAME;
+  static view_module_version = MODULE_VERSION;
+}
+
+export class ReteConnectionView extends DOMWidgetView {
+  async render(): Promise<void> {
+    super.render();
+    return this.setupEventListeners();
+  }
+
+  async setupEventListeners(): Promise<void> {
+    return;
+  }
+
+  declare model: ReteConnectionModel;
+}
+
 abstract class ReteIOModel extends DOMWidgetModel {
   defaults(): any {
     return {
       ...super.defaults(),
       key: undefined,
       title: undefined,
+      multi_connection: undefined,
       socket_type: undefined,
       _model_name: ReteIOModel.model_name,
       _model_module: ReteIOModel.model_module,
@@ -77,6 +135,7 @@ abstract class ReteIOModel extends DOMWidgetModel {
     super.initialize(attributes, options);
     this.key = this.get('key');
     this.title = this.get('title');
+    this.multi_connection = this.get('multi_connection');
     this.socket_type = this.get('socket_type');
     this.sockets = this.get('sockets');
   }
@@ -86,6 +145,7 @@ abstract class ReteIOModel extends DOMWidgetModel {
 
   key: string;
   title: string;
+  multi_connection: boolean;
   socket_type: string;
   sockets: ReteSocketCollectionModel;
   static model_name = 'ReteIOModel';
@@ -107,13 +167,19 @@ export class ReteInputModel extends ReteIOModel {
   }
 
   getInstance(): Rete.Input {
-    return new Rete.Input(
-      this.key,
-      this.title,
-      this.sockets.getSocket(this.socket_type)
-    );
+    // Disabled for time being
+    if (!this._instance) {
+      return new Rete.Input(
+        this.key,
+        this.title,
+        this.sockets.getSocket(this.socket_type),
+        this.multi_connection
+      );
+    }
+    return this._instance;
   }
 
+  _instance: Rete.Input;
   static model_name = 'ReteInputModel';
 }
 
@@ -126,13 +192,19 @@ export class ReteOutputModel extends ReteIOModel {
   }
 
   getInstance(): Rete.Output {
-    return new Rete.Output(
-      this.key,
-      this.title,
-      this.sockets.getSocket(this.socket_type)
-    );
+    // Disabled for time being
+    if (!this._instance) {
+      return new Rete.Output(
+        this.key,
+        this.title,
+        this.sockets.getSocket(this.socket_type),
+        this.multi_connection
+      );
+    }
+    return this._instance;
   }
 
+  _instance: Rete.Output;
   static model_name = 'ReteOutputModel';
 }
 
@@ -154,6 +226,7 @@ export class ReteComponentModel extends DOMWidgetModel {
     this.title = this.get('title');
     this.inputs = this.get('inputs');
     this.outputs = this.get('outputs');
+    this.controls = this.get('controls');
     this.type_name = this.get('type_name');
     await this.createComponent();
   }
@@ -163,6 +236,7 @@ export class ReteComponentModel extends DOMWidgetModel {
     const title = this.title;
     const inputs = this.inputs;
     const outputs = this.outputs;
+    const controls = this.controls;
     this._rete_component = new (class ThisComponent extends Rete.Component {
       constructor(_title: string) {
         super(title);
@@ -171,11 +245,15 @@ export class ReteComponentModel extends DOMWidgetModel {
         node.meta.componentType = thisTypeName;
         node.meta.inputSlots = inputs;
         node.meta.outputSlots = outputs;
+        node.meta.controls = controls;
         inputs.forEach((e: ReteInputModel) => {
           node.addInput(e.getInstance());
         });
         outputs.forEach((e: ReteOutputModel) => {
           node.addOutput(e.getInstance());
+        });
+        controls.forEach((e: ReteControlModel) => {
+          node.addControl(e.getInstance());
         });
       }
       worker(
@@ -194,7 +272,8 @@ export class ReteComponentModel extends DOMWidgetModel {
     ...DOMWidgetModel.serializers,
     sockets: { deserialize: unpack_models },
     inputs: { deserialize: unpack_models },
-    outputs: { deserialize: unpack_models }
+    outputs: { deserialize: unpack_models },
+    controls: { deserialize: unpack_models }
   };
 
   // the inputs and outputs will need serializers and deserializers
@@ -204,6 +283,7 @@ export class ReteComponentModel extends DOMWidgetModel {
   type_name: string;
   inputs: ReteInputModel[];
   outputs: ReteOutputModel[];
+  controls: ReteControlModel[];
   static model_name = 'ReteComponentModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
@@ -217,6 +297,7 @@ export class ReteNodeModel extends DOMWidgetModel {
       type_name: 'DefaultComponent',
       inputs: [],
       outputs: [],
+      controls: [],
       _model_name: ReteNodeModel.model_name,
       _model_module: ReteNodeModel.model_module,
       _model_module_version: ReteNodeModel.model_module_version,
@@ -232,10 +313,13 @@ export class ReteNodeModel extends DOMWidgetModel {
     this.on('change:title', this.changeTitle, this);
     this.on('change:inputs', this.changeInputs, this);
     this.on('change:outputs', this.changeOutputs, this);
+    this.on('change:controls', this.changeControls, this);
   }
 
   changeTitle(): void {
     this._node.name = this.get('title');
+    this.title = this.get('title');
+    this._node.update();
   }
 
   changeInputs(): void {
@@ -251,6 +335,7 @@ export class ReteNodeModel extends DOMWidgetModel {
       }
     }
     this._node?.update();
+    this.inputs = this.get('inputs');
   }
 
   changeOutputs(): void {
@@ -266,12 +351,30 @@ export class ReteNodeModel extends DOMWidgetModel {
       }
     }
     this._node?.update();
+    this.outputs = this.get('outputs');
+  }
+
+  changeControls(): void {
+    const newControls: ReteControlModel[] = this.get('controls') || [];
+    const oldControls: ReteControlModel[] = this.previous('controls') || [];
+    for (const remEl of oldControls.filter(_ => !newControls.includes(_))) {
+      // These are instances, so we match based on keys
+      this._node?.removeControl(this._node.controls.get(remEl.key));
+    }
+    for (const newEl of newControls.filter(_ => !oldControls.includes(_))) {
+      if (!this._node.controls.has(newEl.getInstance().key)) {
+        this._node?.addControl(newEl.getInstance());
+      }
+    }
+    this.controls = this.get('controls');
+    this._node?.update();
   }
 
   static serializers: ISerializers = {
     ...DOMWidgetModel.serializers,
     inputs: { deserialize: unpack_models },
-    outputs: { deserialize: unpack_models }
+    outputs: { deserialize: unpack_models },
+    controls: { deserialize: unpack_models }
   };
 
   // the inputs and outputs will need serializers and deserializers
@@ -280,6 +383,7 @@ export class ReteNodeModel extends DOMWidgetModel {
   _node?: Rete.Node;
   inputs: ReteInputModel[] = [];
   outputs: ReteOutputModel[] = [];
+  controls: ReteControlModel[] = [];
   static model_name = 'ReteNodeModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
@@ -309,6 +413,7 @@ export class ReteEditorModel extends DOMWidgetModel {
       _components: [],
       selected_node: undefined,
       nodes: [],
+      connections: [],
       _model_name: ReteEditorModel.model_name,
       _model_module: ReteEditorModel.model_module,
       _model_module_version: ReteEditorModel.model_module_version,
@@ -323,14 +428,20 @@ export class ReteEditorModel extends DOMWidgetModel {
     super.initialize(attributes, options);
     this.engine = new Rete.Engine(`${MODULE_NAME}@${MODULE_VERSION}`);
     this.on('change:_components', this.addNewComponent, this);
+    this.on('change:nodes', () => (this.nodes = this.get('nodes')));
     this.on('msg:custom', this.onCommand.bind(this));
     this.addNewComponent();
   }
 
   async updateViews(): Promise<void> {
     for (const viewId of Object.keys(this.views)) {
-      await this.views[viewId].then(v => {
-        (v as ReteEditorView).editor.view.area.update();
+      await this.views[viewId].then(_v => {
+        const v = _v as ReteEditorView;
+        v.editor.view.area.update();
+        for (const [node, nodeView] of v.editor.view.nodes) {
+          node.update();
+          nodeView.update();
+        }
       });
     }
   }
@@ -380,11 +491,14 @@ export class ReteEditorModel extends DOMWidgetModel {
   static serializers: ISerializers = {
     ...DOMWidgetModel.serializers,
     _components: { deserialize: unpack_models },
-    nodes: { deserialize: unpack_models }
+    nodes: { deserialize: unpack_models },
+    selected_node: { deserialize: unpack_models },
+    connections: { deserialize: unpack_models }
   };
 
   _components: ReteComponentModel[];
   nodes: ReteNodeModel[];
+  connections: ReteConnectionModel[];
   engine: Rete.Engine;
   editorConfig: { [key: string]: any };
   static model_name = 'ReteEditorModel';
@@ -398,10 +512,11 @@ export class ReteEditorModel extends DOMWidgetModel {
 export class ReteConnectionModel extends DOMWidgetModel {}
 export class ReteEditorView extends DOMWidgetView {
   render(): void {
+    this.el.classList.add('retejseditor');
     this.div = document.createElement('div');
     this.divId = 'rete-editor-' + uuid();
+    this.div.classList.add('retejseditorDiv');
     this.div.setAttribute('id', this.divId);
-    this.el.classList.add('retejseditor');
     this.el.appendChild(this.div);
     //await this.editor.fromJSON(editorData as any);
     this.setupListeners();
@@ -411,11 +526,11 @@ export class ReteEditorView extends DOMWidgetView {
   setupListeners(): void {
     this.model.on('change:_components', this.addNewComponent, this);
     this.model.on('change:nodes', this.updateNodes, this);
+    this.model.on('change:connections', this.updateConnections, this);
   }
 
   addNewComponent(): void {
     const components: ReteComponentModel[] = this.model.get('_components');
-    console.log(components);
     components.forEach(v => {
       if (this.editor.components.get(v.title) === undefined) {
         this.editor.register(v._rete_component);
@@ -433,12 +548,14 @@ export class ReteEditorView extends DOMWidgetView {
     this.editor.use(ContextMenuPlugin);
     this.editor.use(AutoArrangePlugin, { margin: { x: 25, y: 25 }, depth: 0 });
     this.editor.register(defaultComponent);
+    this.editor.on(['nodetranslated'], async () => {
+      this.model.updateViews();
+    });
     this.editor.on(['noderemoved'], async () => {
       this.model.updateViews();
     });
     this.editor.on(['nodeselected'], async (node: Rete.Node) => {
       // Figure out which NodeModel it corresponds to
-      console.log('selected', node.meta.nodeModel);
       this.model.set('selected_node', node.meta.nodeModel);
       this.model.save_changes();
     });
@@ -447,33 +564,71 @@ export class ReteEditorView extends DOMWidgetView {
       this.model.updateViews();
     });
     this.editor.on(
-      ['connectioncreated', 'connectionremoved'],
+      ['connectionremoved'],
       // Note that I *believe* that the connectionremoved function is called
       // whenever a connection is clicked on.  That's not super ideal, since
       // we really only want to sync when the connection has been deleted.
       // We may actually eventually want to explore using connectiondrop, which
       // may fire only when the mouse is lifted.
-      async (connection: Rete.Connection) => this.updateConnection(connection)
+      async (connection: Rete.Connection) => this.removeConnection(connection)
+    );
+    this.editor.on(['connectioncreated'], async (connection: Rete.Connection) =>
+      this.createConnection(connection)
+    );
+    this.editor.on(
+      [
+        'connectioncreated',
+        'connectionremoved',
+        'nodecreated',
+        'noderemoved',
+        'componentregister'
+      ],
+      async () => this.updateConfig()
     );
     this.editor.view.resize();
+    this.div.style.height = null;
     this.addNewComponent();
+    return this.addInitialNodes();
+  }
+
+  private async addInitialNodes(): Promise<void> {
+    const nodes: ReteNodeModel[] = this.model.get('nodes');
+    for (const newNode of nodes) {
+      if (newNode._node === undefined) {
+        console.log('Adding new node', newNode);
+        newNode._node = new Rete.Node(newNode.get('title'));
+        newNode._node.meta.nodeModel = newNode;
+        newNode.changeInputs();
+        newNode.changeOutputs();
+        newNode.changeControls();
+      }
+      if (!this.editor.nodes.includes(newNode._node)) {
+        this.editor.addNode(newNode._node);
+      }
+    }
+  }
+
+  async updateConfig(): Promise<void> {
+    this.model.editorConfig = this.editor.toJSON();
+    // console.log('Updating config', this.model.editorConfig);
+    this.model.set('editorConfig', this.model.editorConfig);
+    this.model.save();
   }
 
   async updateNodes(model: ReteEditorModel): Promise<void> {
     const oldNodes: ReteNodeModel[] = model.previous('nodes');
     const newNodes: ReteNodeModel[] = model.get('nodes');
-    console.log('oldNodes', this.divId, oldNodes);
     for (const remNode of oldNodes.filter(_ => !newNodes.includes(_))) {
       // These are instances, so we match based on keys
       this.editor.removeNode(remNode._node);
     }
     for (const newNode of newNodes.filter(_ => !oldNodes.includes(_))) {
-      console.log('newnode', this.divId, newNode);
       if (newNode._node === undefined) {
-        newNode._node = new Rete.Node(newNode.get('type_name'));
+        newNode._node = new Rete.Node(newNode.get('title'));
         newNode._node.meta.nodeModel = newNode;
         newNode.changeInputs();
         newNode.changeOutputs();
+        newNode.changeControls();
       }
       if (!this.editor.nodes.includes(newNode._node)) {
         this.editor.addNode(newNode._node);
@@ -481,41 +636,136 @@ export class ReteEditorView extends DOMWidgetView {
         const node = newNode._node;
         (this.editor as any).trigger('arrange', { node });
       }
-      console.log(this.divId, newNode._node);
     }
   }
 
-  async updateConnection(connection: Rete.Connection): Promise<void> {
-    console.log('Updated ', connection);
+  async updateConnections(model: ReteConnectionModel): Promise<void> {
+    const oldConns: ReteConnectionModel[] = model.previous('connections');
+    const newConns: ReteConnectionModel[] = model.get('connections');
+    for (const remConn of oldConns.filter(_ => !newConns.includes(_))) {
+      // These are instances, so we match based on keys
+      console.log('Removing old connection', remConn);
+      this.editor.removeConnection(remConn._connection);
+    }
+    for (const newConn of newConns.filter(_ => !oldConns.includes(_))) {
+      console.log('Found a new connection', newConn);
+      if (newConn._connection === undefined) {
+        // We need to get our connections list and then look at the difference.
+
+        const connData: { [key: string]: unknown } = {};
+        connData['connectionModel'] = newConn;
+        const sourceNode = newConn.source_node._node;
+        const destNode = newConn.destination_node._node;
+        const initialConnections: Rete.Connection[] =
+          sourceNode.getConnections();
+        this.editor.connect(
+          sourceNode.outputs.get(newConn.source_key),
+          destNode.inputs.get(newConn.destination_key),
+          connData
+        );
+        const finalConnections: Rete.Connection[] = sourceNode.getConnections();
+        const newlyAdded = finalConnections.filter(
+          x => !initialConnections.includes(x)
+        );
+        if (newlyAdded.length !== 1) {
+          console.log('Initial:', initialConnections);
+          console.log('Final:', finalConnections);
+          console.log('Intersection:', newlyAdded);
+        }
+        newConn._connection = newlyAdded[0];
+      }
+    }
+  }
+
+  async createConnection(connection: Rete.Connection): Promise<void> {
+    if (
+      (connection.data as { [key: string]: unknown })['connectionModel'] !==
+      undefined
+    ) {
+      console.log('This connection has already been mirrored.');
+      return;
+    }
+    console.log('Created_Connection ', connection); //this will return value
+    console.log('Create_Connection_Input ', connection.input);
+    const manager = this.model.widget_manager;
+    const newConnection: ReteConnectionModel = (await manager.new_widget({
+      model_name: ReteConnectionModel.model_name,
+      model_module: ReteConnectionModel.model_module,
+      model_module_version: ReteConnectionModel.model_module_version,
+      view_name: ReteConnectionModel.view_name,
+      view_module: ReteConnectionModel.view_module,
+      view_module_version: ReteConnectionModel.view_module_version
+    })) as ReteConnectionModel;
+    newConnection._connection = connection;
+    (connection.data as { [key: string]: unknown }) = {
+      connectionModel: newConnection
+    };
+    console.log('Created_Connection ', connection); //this will not return value
+    console.log('Create_Connection_Input ', connection.input);
+    console.log('output', connection.output.node.meta);
+    const sourceNode: ReteNodeModel = connection.output.node.meta
+      .nodeModel as ReteNodeModel;
+    console.log('input', connection.input.node.meta);
+    const destNode: ReteNodeModel = connection.input.node.meta
+      .nodeModel as ReteNodeModel;
+    // We need to get the slots
+    newConnection.set('source_node', sourceNode);
+    newConnection.source_node = sourceNode;
+    newConnection.set('source_key', connection.output.key);
+    newConnection.source_key = connection.output.key;
+    newConnection.set('destination_node', destNode);
+    newConnection.destination_node = destNode;
+    newConnection.set('destination_key', connection.input.key);
+    newConnection.destination_key = connection.input.key;
+    newConnection.save_changes();
+    console.log(newConnection);
+    const newConnections: ReteConnectionModel[] = (
+      this.model.get('connections') as ReteConnectionModel[]
+    ).concat([newConnection]);
+    this.model.set('connections', newConnections);
+    this.model.save_changes();
+    console.log('Saved connections', this.model.get('connections'));
+  }
+  async removeConnection(connection: Rete.Connection): Promise<void> {
+    console.log('Removed ', connection);
   }
 
   async createNewNode(node: Rete.Node): Promise<void> {
     if (node.meta.nodeModel) {
       return;
     }
-    const manager: ManagerBase<any> = this.model.widget_manager;
-    const newNode: ReteNodeModel = (await manager.new_widget({
-      model_name: ReteNodeModel.model_name,
-      model_module: ReteNodeModel.model_module,
-      model_module_version: ReteNodeModel.model_module_version,
-      view_name: ReteNodeModel.view_name,
-      view_module: ReteNodeModel.view_module,
-      view_module_version: ReteNodeModel.view_module_version
-    })) as ReteNodeModel;
+    const manager = this.model.widget_manager;
+    const newNode: ReteNodeModel = (await manager.new_widget(
+      {
+        model_name: ReteNodeModel.model_name,
+        model_module: ReteNodeModel.model_module,
+        model_module_version: ReteNodeModel.model_module_version,
+        view_name: ReteNodeModel.view_name,
+        view_module: ReteNodeModel.view_module,
+        view_module_version: ReteNodeModel.view_module_version
+      },
+      {
+        title: node.name,
+        type_name: 'Type Name',
+        inputs: [],
+        outputs: [],
+        controls: []
+      }
+    )) as ReteNodeModel;
     newNode._node = node;
-    newNode.set('title', node.name);
-    newNode.set('inputs', node.meta.inputSlots || []);
-    newNode.set('outputs', node.meta.outputSlots || []);
-    newNode.save_changes();
     node.meta.nodeModel = newNode;
+    newNode.set('inputs', node.meta.inputSlots);
+    newNode.set('outputs', node.meta.outputSlots);
+    newNode.set('controls', node.meta.controls);
+    newNode.save();
     const newNodes: ReteNodeModel[] = (
       this.model.get('nodes') as ReteNodeModel[]
     ).concat([newNode]);
     this.model.set('nodes', newNodes);
-    this.model.save_changes();
+    await this.model.save();
   }
 
-  model: ReteEditorModel;
+  declare model: ReteEditorModel;
   div: HTMLDivElement;
   divId: string;
   editor: Rete.NodeEditor;

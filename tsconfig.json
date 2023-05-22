@@ -4,8 +4,10 @@
     "composite": true,
     "declaration": true,
     "esModuleInterop": true,
+    "importsNotUsedAsValues": "remove",
     "incremental": true,
-    "jsx": "react",
+    "isolatedModules": true,
+    "jsx": "preserve",
     "module": "esnext",
     "moduleResolution": "node",
     "noEmitOnError": true,
@@ -15,13 +17,27 @@
     "resolveJsonModule": true,
     "outDir": "lib",
     "rootDir": "src",
-    "typeRoots": ["./node_modules/@types/", "./src/localtypes"],
+    "typeRoots": [
+      "./node_modules/@types/",
+      "./src/localtypes"
+    ],
     "strict": true,
     "strictNullChecks": false,
     "target": "es2017",
-    "types": ["node", "rete-react-render-plugin", "rete-vue-render-plugin", "rete-context-menu-plugin", "resize-observer-browser", "rete-auto-arrange-plugin"],
+    "types": [
+      "node",
+      "rete-react-render-plugin",
+      "rete-vue-render-plugin",
+      "rete-context-menu-plugin",
+      "resize-observer-browser",
+      "rete-auto-arrange-plugin"
+    ],
     "skipLibCheck": true
   },
-  "include": ["src/*"],
-  "exclude": ["./src/localtypes"]
+  "include": [
+    "src/*"
+  ],
+  "exclude": [
+    "./src/localtypes"
+  ]
 }

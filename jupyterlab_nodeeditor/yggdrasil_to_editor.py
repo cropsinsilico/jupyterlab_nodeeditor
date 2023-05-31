@@ -28,6 +28,7 @@ def yml_trans(filename, text_only=False, show_instance=False):
             editor.node_editor.nodes = editor.node_editor.nodes + [instance]
         for conn in conns:
             editor.node_editor.connections = editor.node_editor.connections + [conn]
+        editor.node_editor.send({'name': 'arrangeNodes'})
     return editor
 
 

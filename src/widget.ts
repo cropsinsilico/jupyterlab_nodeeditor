@@ -9,6 +9,7 @@ import type {
 import ConnectionPlugin from 'rete-connection-plugin';
 import ContextMenuPlugin from 'rete-context-menu-plugin';
 import VueRenderPlugin from 'rete-vue-render-plugin';
+import AutoArrangePlugin from 'rete-auto-arrange-plugin';
 import {
   DOMWidgetModel,
   DOMWidgetView,
@@ -466,11 +467,18 @@ export class ReteEditorModel extends DOMWidgetModel {
         this.set('editorConfig', this.editorConfig);
         this.save();
         break;
+      case 'arrangeNodes':
+        for await (const viewId of Object.keys(this.views)) {
+          const view = (await this.views[viewId]) as ReteEditorView;
+          for (const node of view.editor.nodes) {
+            view.editor.trigger('arrange' as any, { node });
+          }
+        }
+        break;
       default:
         break;
     }
   }
-
   addNewComponent(): void {
     this._components = this.get('_components');
     this._components.forEach(v => {
@@ -500,7 +508,6 @@ export class ReteEditorModel extends DOMWidgetModel {
   static view_module = MODULE_NAME;
   static view_module_version = MODULE_VERSION;
 }
-
 export class ReteEditorView extends DOMWidgetView {
   render(): void {
     this.el.classList.add('retejseditor');
@@ -537,6 +544,7 @@ export class ReteEditorView extends DOMWidgetView {
     this.editor.use(VueRenderPlugin);
     this.editor.use(ConnectionPlugin);
     this.editor.use(ContextMenuPlugin);
+    this.editor.use(AutoArrangePlugin, { margin: { x: 25, y: 25 }, depth: 0 });
     this.editor.register(defaultComponent);
     this.editor.on(['nodetranslated'], async () => {
       this.model.updateViews();
@@ -657,6 +665,9 @@ export class ReteEditorView extends DOMWidgetView {
       }
       if (!this.editor.nodes.includes(newNode._node)) {
         this.editor.addNode(newNode._node);
+        //(this.editor as any).arrange(newNode._node);
+        const node = newNode._node;
+        (this.editor as any).trigger('arrange', { node });
       }
     }
   }

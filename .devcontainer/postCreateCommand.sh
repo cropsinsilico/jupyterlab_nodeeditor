@@ -1,18 +1,21 @@
 #!/bin/bash
 
-# This is a script to automate the installation process
+# Install Python dependencies
+pip install pyyaml
+pip install jupyter-packaging
+pip install yggdrasil-framework
 
-# run jlpm install
-jlpm install
+# Set up Jupyter notebook kernel
+python -m ipykernel install --name jlne_env --user
 
-# run jupyter labextension develop
-jupyter labextension develop . --overwrite
-
-# run jlpm build
-jlpm run build
-
-# run pip install
+# Install local package in editable mode
 pip install -e .
 
-# install yggdrasil-framework
-pip install yggdrasil-framework
+# Install JavaScript dependencies
+jlpm install
+
+# Develop a JupyterLab extension
+jupyter labextension develop . --overwrite
+
+# Run a build
+jlpm run build

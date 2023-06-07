@@ -45,7 +45,7 @@
     "watch:labextension": "jupyter labextension watch ."
   },
   "dependencies": {
-    "@data-exp-lab/nodeeditor-controls": "^1.0.0",
+    "@data-exp-lab/nodeeditor-controls": "^1.0.2",
     "@jupyter-widgets/base": "^4.0.0",
     "@jupyter-widgets/jupyterlab-manager": "^3.0.0",
     "@jupyterlab/application": "^3.1.0",

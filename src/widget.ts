@@ -592,7 +592,7 @@ export class ReteEditorView extends DOMWidgetView {
 
   private async addInitialConns(): Promise<void> {
     const conns: ReteConnectionModel[] = this.model.get('connections');
-    console.log('hahaha');
+    // console.log('hahaha');
     for (const newConn of conns) {
       console.log('Found a new connection', newConn);
       if (newConn._connection === undefined) {

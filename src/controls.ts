@@ -9,7 +9,7 @@ import {
   NumberInputControl,
   DropDownInputControl,
   TextInputControl
-} from 'nodeeditor-controls';
+} from '@data-exp-lab/nodeeditor-controls';
 import { ReteEditorModel } from './widget';
 type DropDownOption = {
   text: string;

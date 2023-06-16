@@ -18,7 +18,7 @@ import {
 } from '@jupyter-widgets/base';
 import type { ISerializers } from '@jupyter-widgets/base';
 import { MODULE_NAME, MODULE_VERSION } from './version';
-import { ReteControlModel } from './controls';
+import { ReteControlModel, IVueControlWidget } from './controls';
 
 export class ReteSocketCollectionModel extends DOMWidgetModel {
   defaults(): any {
@@ -314,6 +314,23 @@ export class ReteNodeModel extends DOMWidgetModel {
     this.on('change:inputs', this.changeInputs, this);
     this.on('change:outputs', this.changeOutputs, this);
     this.on('change:controls', this.changeControls, this);
+    this.on('msg:custom', this.onCommand, this);
+  }
+
+  private async onCommand(command: any, buffers: any) {
+    console.log('Received command', command, command.args);
+    let con;
+    switch (command.name) {
+      case 'setValue':
+        con = this._node.controls.get(
+          command.args[0] as string
+        ) as IVueControlWidget;
+        console.log('Control', con);
+        con.setValue(command.args[1]);
+        break;
+      default:
+        break;
+    }
   }
 
   changeTitle(): void {
@@ -631,9 +648,10 @@ export class ReteEditorView extends DOMWidgetView {
       }
       if (!this.editor.nodes.includes(newNode._node)) {
         this.editor.addNode(newNode._node);
-        //(this.editor as any).arrange(newNode._node);
         const node = newNode._node;
+        console.log('Arranging');
         (this.editor as any).trigger('arrange', { node });
+        console.log('Arranged');
       }
     }
   }

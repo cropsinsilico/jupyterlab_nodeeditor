@@ -525,7 +525,6 @@ export class ReteEditorModel extends DOMWidgetModel {
   static view_module = MODULE_NAME;
   static view_module_version = MODULE_VERSION;
 }
-
 export class ReteEditorView extends DOMWidgetView {
   render(): void {
     this.el.classList.add('retejseditor');
@@ -562,12 +561,13 @@ export class ReteEditorView extends DOMWidgetView {
     this.editor.use(VueRenderPlugin);
     this.editor.use(ConnectionPlugin);
     this.editor.use(ContextMenuPlugin);
-    this.editor.use(AutoArrangePlugin, { margin: { x: 25, y: 25 }, depth: 1 });
+    this.editor.use(AutoArrangePlugin, { margin: { x: 25, y: 25 }, depth: 0 });
     this.editor.register(defaultComponent);
     this.editor.on(['nodetranslated'], async () => {
       this.model.updateViews();
     });
-    this.editor.on(['noderemoved'], async () => {
+    this.editor.on(['noderemoved'], async (node: Rete.Node) => {
+      await this.removeNode(node);
       this.model.updateViews();
     });
     this.editor.on(['nodeselected'], async (node: Rete.Node) => {
@@ -604,14 +604,46 @@ export class ReteEditorView extends DOMWidgetView {
     this.editor.view.resize();
     this.div.style.height = null;
     this.addNewComponent();
-    return this.addInitialNodes();
+    return this.addInitialNodes(), this.addInitialConns();
   }
 
+  private async addInitialConns(): Promise<void> {
+    const conns: ReteConnectionModel[] = this.model.get('connections');
+    // console.log('hahaha');
+    for (const newConn of conns) {
+      console.log('Found a new connection', newConn);
+      if (newConn._connection === undefined) {
+        // We need to get our connections list and then look at the difference.
+
+        const connData: { [key: string]: unknown } = {};
+        connData['connectionModel'] = newConn;
+        const sourceNode = newConn.source_node._node;
+        const destNode = newConn.destination_node._node;
+        const initialConnections: Rete.Connection[] =
+          sourceNode.getConnections();
+        this.editor.connect(
+          sourceNode.outputs.get(newConn.source_key),
+          destNode.inputs.get(newConn.destination_key),
+          connData
+        );
+        const finalConnections: Rete.Connection[] = sourceNode.getConnections();
+        const newlyAdded = finalConnections.filter(
+          x => !initialConnections.includes(x)
+        );
+        if (newlyAdded.length !== 1) {
+          // console.log('Initial:', initialConnections);
+          // console.log('Final:', finalConnections);
+          // console.log('Intersection:', newlyAdded);
+        }
+        newConn._connection = newlyAdded[0];
+      }
+    }
+  }
   private async addInitialNodes(): Promise<void> {
     const nodes: ReteNodeModel[] = this.model.get('nodes');
     for (const newNode of nodes) {
       if (newNode._node === undefined) {
-        console.log('Adding new node', newNode);
+        // console.log('Adding new node', newNode);
         newNode._node = new Rete.Node(newNode.get('title'));
         newNode._node.meta.nodeModel = newNode;
         newNode.changeInputs();
@@ -636,7 +668,9 @@ export class ReteEditorView extends DOMWidgetView {
     const newNodes: ReteNodeModel[] = model.get('nodes');
     for (const remNode of oldNodes.filter(_ => !newNodes.includes(_))) {
       // These are instances, so we match based on keys
-      this.editor.removeNode(remNode._node);
+      if (this.editor.nodes.includes(remNode._node)) {
+        this.editor.removeNode(remNode._node);
+      }
     }
     for (const newNode of newNodes.filter(_ => !oldNodes.includes(_))) {
       if (newNode._node === undefined) {
@@ -649,9 +683,7 @@ export class ReteEditorView extends DOMWidgetView {
       if (!this.editor.nodes.includes(newNode._node)) {
         this.editor.addNode(newNode._node);
         const node = newNode._node;
-        console.log('Arranging');
         (this.editor as any).trigger('arrange', { node });
-        console.log('Arranged');
       }
     }
   }
@@ -661,11 +693,11 @@ export class ReteEditorView extends DOMWidgetView {
     const newConns: ReteConnectionModel[] = model.get('connections');
     for (const remConn of oldConns.filter(_ => !newConns.includes(_))) {
       // These are instances, so we match based on keys
-      console.log('Removing old connection', remConn);
+      // console.log('Removing old connection', remConn);
       this.editor.removeConnection(remConn._connection);
     }
     for (const newConn of newConns.filter(_ => !oldConns.includes(_))) {
-      console.log('Found a new connection', newConn);
+      // console.log('Found a new connection', newConn);
       if (newConn._connection === undefined) {
         // We need to get our connections list and then look at the difference.
 
@@ -699,11 +731,11 @@ export class ReteEditorView extends DOMWidgetView {
       (connection.data as { [key: string]: unknown })['connectionModel'] !==
       undefined
     ) {
-      console.log('This connection has already been mirrored.');
+      // console.log('This connection has already been mirrored.');
       return;
     }
-    console.log('Created_Connection ', connection); //this will return value
-    console.log('Create_Connection_Input ', connection.input);
+    // console.log('Created_Connection ', connection); //this will return value
+    // console.log('Create_Connection_Input ', connection.input);
     const manager = this.model.widget_manager;
     const newConnection: ReteConnectionModel = (await manager.new_widget({
       model_name: ReteConnectionModel.model_name,
@@ -717,12 +749,12 @@ export class ReteEditorView extends DOMWidgetView {
     (connection.data as { [key: string]: unknown }) = {
       connectionModel: newConnection
     };
-    console.log('Created_Connection ', connection); //this will not return value
-    console.log('Create_Connection_Input ', connection.input);
-    console.log('output', connection.output.node.meta);
+    // console.log('Created_Connection ', connection); //this will not return value
+    // console.log('Create_Connection_Input ', connection.input);
+    // console.log('output', connection.output.node.meta);
     const sourceNode: ReteNodeModel = connection.output.node.meta
       .nodeModel as ReteNodeModel;
-    console.log('input', connection.input.node.meta);
+    // console.log('input', connection.input.node.meta);
     const destNode: ReteNodeModel = connection.input.node.meta
       .nodeModel as ReteNodeModel;
     // We need to get the slots
@@ -735,16 +767,16 @@ export class ReteEditorView extends DOMWidgetView {
     newConnection.set('destination_key', connection.input.key);
     newConnection.destination_key = connection.input.key;
     newConnection.save_changes();
-    console.log(newConnection);
+    // console.log(newConnection);
     const newConnections: ReteConnectionModel[] = (
       this.model.get('connections') as ReteConnectionModel[]
     ).concat([newConnection]);
     this.model.set('connections', newConnections);
     this.model.save_changes();
-    console.log('Saved connections', this.model.get('connections'));
+    // console.log('Saved connections', this.model.get('connections'));
   }
   async removeConnection(connection: Rete.Connection): Promise<void> {
-    console.log('Removed ', connection);
+    // console.log('Removed ', connection);
   }
 
   async createNewNode(node: Rete.Node): Promise<void> {
@@ -778,6 +810,19 @@ export class ReteEditorView extends DOMWidgetView {
     const newNodes: ReteNodeModel[] = (
       this.model.get('nodes') as ReteNodeModel[]
     ).concat([newNode]);
+    this.model.set('nodes', newNodes);
+    await this.model.save();
+  }
+
+  async removeNode(node: Rete.Node): Promise<void> {
+    if (!node.meta.nodeModel) {
+      return;
+    }
+    const nModel: ReteNodeModel = node.meta.nodeModel as ReteNodeModel;
+    const oldNodes: ReteNodeModel[] = this.model.get(
+      'nodes'
+    ) as ReteNodeModel[];
+    const newNodes = oldNodes.filter(n => n.model_id !== nModel.model_id);
     this.model.set('nodes', newNodes);
     await this.model.save();
   }

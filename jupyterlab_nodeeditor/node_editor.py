@@ -189,22 +189,23 @@ class NodeInstanceModel(ipywidgets.Widget):
         output_grid = ipywidgets.GridspecLayout(len(self.outputs) + 1, 2)
         box = ipywidgets.VBox([title, input_grid, output_grid])
 
-        def _update_inputs(event):
+        def _update_inputs(event = None):
             input_grid = ipywidgets.GridspecLayout(len(self.inputs) + 1, 2)
             input_grid[0, :] = ipywidgets.Label("Inputs")
             for i, slot in enumerate(self.inputs):
                 input_grid[i + 1, 0], input_grid[i + 1, 1] = slot.widget()
             box.children = box.children[:1] + (input_grid,) + box.children[2:]
 
-        def _update_outputs(event):
+        def _update_outputs(event = None):
             output_grid = ipywidgets.GridspecLayout(len(self.outputs) + 1, 2)
             output_grid[0, :] = ipywidgets.Label("Outputs")
             for i, slot in enumerate(self.outputs):
                 output_grid[i + 1, 0], output_grid[i + 1, 1] = slot.widget()
             box.children = box.children[:2] + (output_grid,)
-
         self.observe(_update_inputs, ["inputs"])
         self.observe(_update_outputs, ["outputs"])
+        _update_inputs()
+        _update_outputs()
         return box
 
 

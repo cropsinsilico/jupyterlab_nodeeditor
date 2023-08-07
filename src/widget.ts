@@ -591,6 +591,12 @@ export class ReteEditorView extends DOMWidgetView {
     this.editor.on(['connectioncreated'], async (connection: Rete.Connection) =>
       this.createConnection(connection)
     );
+    this.editor.on('contextmenu', () => {
+      requestAnimationFrame(() => {
+        const el = document.querySelector('.context-menu')
+        document.body.appendChild(el)
+      })
+    });
     this.editor.on(
       [
         'connectioncreated',

@@ -1,20 +1,19 @@
-import json
-from pathlib import Path
+try:
+    from ._version import __version__
+except ImportError:
+    # Fallback when using the package in dev mode without installing
+    # in editable mode with pip. It is highly recommended to install
+    # the package from a stable release or in editable mode:
+    # https://pip.pypa.io/en/stable/topics/local-project-installs/
+    import warnings
 
-from ._version import __version__
-
-HERE = Path(__file__).parent.resolve()
-fn = HERE / "labextension" / "package.json"
-
-with fn.open() as fid:
-    data = json.load(fid)
+    warnings.warn("Importing 'jupyterlab_nodeeditor' outside a proper installation.")
+    __version__ = "dev"
+from .handlers import setup_handlers
 
 
 def _jupyter_labextension_paths():
-    return [{"src": "labextension", "dest": data["name"]}]
-
-
-from .handlers import setup_handlers
+    return [{"src": "labextension", "dest": "jupyterlab_nodeeditor"}]
 
 
 def _jupyter_server_extension_points():
@@ -57,4 +56,4 @@ from .node_editor import (
     SocketCollection,
     TextInputControlModel,
 )
-from .yggdrasil_to_editor import yml_trans, editor_yaml
+from .yggdrasil_to_editor import editor_yaml, yml_trans

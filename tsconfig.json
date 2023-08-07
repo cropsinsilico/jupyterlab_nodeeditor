@@ -7,12 +7,12 @@
     "importsNotUsedAsValues": "remove",
     "incremental": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react",
     "module": "esnext",
     "moduleResolution": "node",
     "noEmitOnError": true,
     "noImplicitAny": true,
-    "noUnusedLocals": false,
+    "noUnusedLocals": true,
     "preserveWatchOutput": true,
     "resolveJsonModule": true,
     "outDir": "lib",
@@ -23,7 +23,7 @@
     ],
     "strict": true,
     "strictNullChecks": false,
-    "target": "es2017",
+    "target": "ES2018",
     "types": [
       "node",
       "rete-react-render-plugin",
@@ -34,9 +34,7 @@
     ],
     "skipLibCheck": true
   },
-  "include": [
-    "src/*"
-  ],
+  "include": ["src/*"],
   "exclude": [
     "./src/localtypes"
   ]

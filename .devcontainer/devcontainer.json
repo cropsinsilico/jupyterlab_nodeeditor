@@ -3,8 +3,5 @@
 {
 	"name": "JLNE_ENV",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/universal:2",
-
-	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "bash ./.devcontainer/postCreateCommand.sh"
+	"image": "mcr.microsoft.com/devcontainers/universal:2"
 }

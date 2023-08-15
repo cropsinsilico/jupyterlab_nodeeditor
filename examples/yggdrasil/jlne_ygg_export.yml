@@ -1,0 +1,9 @@
+models:
+- name: co2
+  inputs:
+  - name: co2:height
+  outputs:
+  - name: co2:co2
+  language: python
+  args: ../models/co2.py
+connections: []

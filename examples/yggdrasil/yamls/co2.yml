@@ -1,0 +1,17 @@
+model:
+  name: co2
+  language: python
+  args: [../models/co2.py, 5.0, 23.0, 126.0]
+  inputs:
+    - name: height
+      vars: [doy, height]
+      default_file:
+        name: ../input/height.txt
+        filetype: table
+  outputs:
+    - name: co2
+      vars: [doy, co2]
+      default_file:
+        name: ../output/co2.txt
+        filetype: table
+        field_names: [doy,concentration]

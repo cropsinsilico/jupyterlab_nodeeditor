@@ -65,7 +65,7 @@ def transform(model_set, coll, editor):
         output_ls = []
         ports_dict = {}  # store all the port name and key for connection purpose
 
-        # print(outputs)
+        print(outputs)
         for input_,input_file_path in inputs.items():
             locals()["int_{}".format(input_param)] = jlne.InputSlot(
                 title=input_,
@@ -84,7 +84,7 @@ def transform(model_set, coll, editor):
                 key="out_{}".format(output_parm),
                 sockets=coll,
                 multi_connection=True,
-                default_file=output_file_path,
+                defaultfile=output_file_path,
             )
             ports_dict[output_] = "out_{}".format(output_parm)
             output_ls.append(locals()["out_{}".format(output_parm)])

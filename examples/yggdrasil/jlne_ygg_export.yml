@@ -1,9 +1,13 @@
 models:
-- name: co2
+- name: NumberInput
   inputs:
-  - name: co2:height
+  - name: NumberInput:Number 1
+    default_file: ../input/height.txt
+  - name: NumberInput:Number 2
+    default_file: ../input/height.txt
   outputs:
-  - name: co2:co2
+  - name: NumberInput:Number 3
+    default_file: ../input/height.txt
   language: python
-  args: ../models/co2.py
+  args: 0
 connections: []

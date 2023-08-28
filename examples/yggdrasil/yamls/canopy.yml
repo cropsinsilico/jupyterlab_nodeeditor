@@ -1,0 +1,26 @@
+model:
+  name: CanopyModel
+  language: c++
+  args: ./src/canopy.cpp
+  inputs:
+    - name: plant_layout
+      default_file:
+        name: ./Input/plant_layout.txt
+        filetype: table
+    - name: init_canopy_structure
+      default_file:
+        name: ./Input/canopy_structure.txt
+        filetype: table
+    - name: growth_rate
+      default_file:
+        name: ./Input/growth_rate.txt
+        filetype: table
+    - name: time
+      default_file:
+        name: ./Input/time.txt
+        filetype: table
+  outputs:
+    - name: canopy_structure
+      default_file:
+        name: ./Output/canopy_structure.txt
+        filetype: table

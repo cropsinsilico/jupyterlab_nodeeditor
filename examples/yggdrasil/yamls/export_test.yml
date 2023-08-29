@@ -29,6 +29,27 @@ models:
         default_file:
           name: ./Output/growth_rate.txt
           filetype: table
+  - name: PhotosynthesisModel
+    language: python
+    args: ./src/photosynthesis.py
+    inputs:
+      - name: PhotosynthesisModel:light_intensity
+        default_file:
+          name: ./Input/light_intensity.txt
+          filetype: table
+      - name: PhotosynthesisModel:temperature
+        default_file:
+          name: ./Input/temperature.txt
+          filetype: table
+      - name: PhotosynthesisModel:co2
+        default_file:
+          name: ./Input/co2.txt
+          filetype: table
+    outputs:
+      - name: PhotosynthesisModel:photosynthesis_rate
+        default_file:
+          name: ./Output/photosynthesis_rate.txt
+          filetype: table
   - name: CanopyModel
     language: python
     args: ./src/canopy.cpp
@@ -54,28 +75,7 @@ models:
         default_file:
           name: ./Output/canopy_structure.txt
           filetype: table
-  - name: PhotosynthesisModel
-    language: python
-    args: ./src/photosynthesis.py
-    inputs:
-      - name: PhotosynthesisModel:light_intensity
-        default_file:
-          name: ./Input/light_intensity.txt
-          filetype: table
-      - name: PhotosynthesisModel:temperature
-        default_file:
-          name: ./Input/temperature.txt
-          filetype: table
-      - name: PhotosynthesisModel:co2
-        default_file:
-          name: ./Input/co2.txt
-          filetype: table
-    outputs:
-      - name: PhotosynthesisModel:photosynthesis_rate
-        default_file:
-          name: ./Output/photosynthesis_rate.txt
-          filetype: table
 connections:
-  - inputs: GrowthModel:growth_rate
+  - inputs: CanopyModel:canopy_structure
     outputs:
-      - CanopyModel:growth_rate
+      - LightModel:canopy_structure

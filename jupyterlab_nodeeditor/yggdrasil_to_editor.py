@@ -16,6 +16,7 @@ def yml_trans(filename, text_only=False, show_instance=False):
     model_set = yamlfile.parse_yaml(filename, model_only=True)
     editor = jlne.NodeEditor(socket_collection=coll)
     comps, instances, conns = transform(model_set, coll, editor)
+    # print(comps)
 
     if text_only:
         return comps
@@ -41,6 +42,8 @@ def transform(model_set, coll, editor):
     for model in model_set["models"]:
         args = model["args"]
         model_name = model["name"]
+        model_lang = model["inputs"][0]["partner_language"]
+        # print(model_lang)
         inputs = {}
         outputs = {}
 
@@ -90,6 +93,7 @@ def transform(model_set, coll, editor):
                 sockets=coll,
                 multi_connection=True,
                 default_file=input_file_path,
+                language=model_lang,
             )
             ports_dict[input_] = "int_{}".format(input_param)
             input_ls.append(locals()["int_{}".format(input_param)])
@@ -102,6 +106,7 @@ def transform(model_set, coll, editor):
                 sockets=coll,
                 multi_connection=True,
                 default_file=output_file_path,
+                language=model_lang,
             )
             ports_dict[output_] = "out_{}".format(output_parm)
             output_ls.append(locals()["out_{}".format(output_parm)])
@@ -276,8 +281,10 @@ def parse_editor_config(py_models_dict, editor_json):
 
         single_model_dict["name"] = model_name
         # for test purpose
-        single_model_dict["language"] = "python"
         single_model_dict["args"] = py_models_dict[str(model_id)]["args"]
+        single_model_dict["language"] = list(
+            py_models_dict[str(model_id)]["inputs"]
+        )[0].language
 
         input_ls = []
         output_ls = []

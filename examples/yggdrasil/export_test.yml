@@ -1,7 +1,7 @@
 models:
   - name: LightModel
-    language: python
     args: ./src/light.c
+    language: c
     inputs:
       - name: LightModel:ambient_light
         default_file:
@@ -17,8 +17,8 @@ models:
           name: ./Output/light_intensity.txt
           filetype: table
   - name: GrowthModel
-    language: python
     args: ./src/growth.py
+    language: python
     inputs:
       - name: GrowthModel:photosynthesis_rate
         default_file:
@@ -29,30 +29,9 @@ models:
         default_file:
           name: ./Output/growth_rate.txt
           filetype: table
-  - name: PhotosynthesisModel
-    language: python
-    args: ./src/photosynthesis.py
-    inputs:
-      - name: PhotosynthesisModel:light_intensity
-        default_file:
-          name: ./Input/light_intensity.txt
-          filetype: table
-      - name: PhotosynthesisModel:temperature
-        default_file:
-          name: ./Input/temperature.txt
-          filetype: table
-      - name: PhotosynthesisModel:co2
-        default_file:
-          name: ./Input/co2.txt
-          filetype: table
-    outputs:
-      - name: PhotosynthesisModel:photosynthesis_rate
-        default_file:
-          name: ./Output/photosynthesis_rate.txt
-          filetype: table
   - name: CanopyModel
-    language: python
     args: ./src/canopy.cpp
+    language: c++
     inputs:
       - name: CanopyModel:plant_layout
         default_file:
@@ -75,7 +54,34 @@ models:
         default_file:
           name: ./Output/canopy_structure.txt
           filetype: table
+  - name: PhotosynthesisModel
+    args: ./src/photosynthesis.py
+    language: python
+    inputs:
+      - name: PhotosynthesisModel:light_intensity
+        default_file:
+          name: ./Input/light_intensity.txt
+          filetype: table
+      - name: PhotosynthesisModel:temperature
+        default_file:
+          name: ./Input/temperature.txt
+          filetype: table
+      - name: PhotosynthesisModel:co2
+        default_file:
+          name: ./Input/co2.txt
+          filetype: table
+    outputs:
+      - name: PhotosynthesisModel:photosynthesis_rate
+        default_file:
+          name: ./Output/photosynthesis_rate.txt
+          filetype: table
 connections:
+  - inputs: LightModel:light_intensity
+    outputs:
+      - PhotosynthesisModel:light_intensity
+  - inputs: GrowthModel:growth_rate
+    outputs:
+      - CanopyModel:growth_rate
   - inputs: CanopyModel:canopy_structure
     outputs:
       - LightModel:canopy_structure

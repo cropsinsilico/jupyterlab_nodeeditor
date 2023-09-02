@@ -11,6 +11,7 @@ model:
       default_file:
         name: ./Input/canopy_structure.txt
         filetype: table
+        as_array: True
     - name: growth_rate
       default_file:
         name: ./Input/growth_rate.txt
@@ -24,3 +25,5 @@ model:
       default_file:
         name: ./Output/canopy_structure.txt
         filetype: table
+        as_array: True
+        field_names: x1,y1,z1,x2,y2,z2,x3,y3,z3

@@ -43,38 +43,36 @@ def transform(model_set, coll, editor):
         args = model["args"]
         model_name = model["name"]
         model_lang = model["inputs"][0]["partner_language"]
-        # print(model_lang)
+
+        # create inputs and outputs dict
         inputs = {}
         outputs = {}
 
-        # currently we only consider inputs/outputs contains on input/output
+        # inputs name, default_file
         for input__ in model["inputs"]:
             temp_input = input__["name"].split(":")[1]
             if "is_default" in input__.keys():
                 continue
             else:
-                input_default_file = OrderedDict(
-                    {
-                        k: input__["default_file"][k]
-                        for k in ("filetype", "name")
-                        if k in input__["default_file"]
-                    }
-                )
-                inputs[temp_input] = input_default_file
-
+                if "working_dir" in input__["default_file"]:
+                    del input__["default_file"]["working_dir"]
+                inputs[temp_input] = {
+                    "default_file": input__["default_file"],
+                    # Assuming that "datatype" might not always be present
+                    "datatype": input__.get("datatype", None),
+                }
+        # outputs name, default_file
         for output__ in model["outputs"]:
             temp_output = output__["name"].split(":")[1]
             if "is_default" in output__.keys():
                 continue
             else:
-                output_default_file = OrderedDict(
-                    {
-                        k: output__["default_file"][k]
-                        for k in ("filetype", "name")
-                        if k in output__["default_file"]
-                    }
-                )
-                outputs[temp_output] = output_default_file
+                if "working_dir" in output__["default_file"]:
+                    del output__["default_file"]["working_dir"]
+                outputs[temp_output] = {
+                    "default_file": output__["default_file"],
+                    "datatype": output__.get("datatype", None),
+                }
 
         # we create the ints and outs below at the end return the nodes
         input_param = 1
@@ -92,7 +90,8 @@ def transform(model_set, coll, editor):
                 key="int_{}".format(input_param),
                 sockets=coll,
                 multi_connection=True,
-                default_file=input_file_path,
+                default_file=input_file_path["default_file"],
+                datatype=input_file_path["datatype"],
                 language=model_lang,
             )
             ports_dict[input_] = "int_{}".format(input_param)
@@ -105,7 +104,8 @@ def transform(model_set, coll, editor):
                 key="out_{}".format(output_parm),
                 sockets=coll,
                 multi_connection=True,
-                default_file=output_file_path,
+                default_file=output_file_path["default_file"],
+                datatype=output_file_path["datatype"],
                 language=model_lang,
             )
             ports_dict[output_] = "out_{}".format(output_parm)
@@ -280,11 +280,10 @@ def parse_editor_config(py_models_dict, editor_json):
         inst_dict[model_id] = model_name
 
         single_model_dict["name"] = model_name
-        # for test purpose
-        single_model_dict["args"] = py_models_dict[str(model_id)]["args"]
         single_model_dict["language"] = list(
             py_models_dict[str(model_id)]["inputs"]
         )[0].language
+        single_model_dict["args"] = py_models_dict[str(model_id)]["args"]
 
         input_ls = []
         output_ls = []
@@ -293,26 +292,16 @@ def parse_editor_config(py_models_dict, editor_json):
         for model_input in inputs:
             single_port = OrderedDict()
             single_port["name"] = model_name + ":" + model_input.title
-            in_ordered_default_file = OrderedDict(
-                [
-                    ("name", model_input.default_file.get("name")),
-                    ("filetype", model_input.default_file.get("filetype")),
-                ]
-            )
-            single_port["default_file"] = in_ordered_default_file
+            single_port["default_file"] = model_input.default_file
+            single_port["datatype"] = model_input.datatype
             input_ls.append(single_port)
 
         outputs = list(py_models_dict[str(model_id)]["outputs"])
         for model_output in outputs:
             single_port = OrderedDict()
             single_port["name"] = model_name + ":" + model_output.title
-            out_ordered_default_file = OrderedDict(
-                [
-                    ("name", model_output.default_file.get("name")),
-                    ("filetype", model_output.default_file.get("filetype")),
-                ]
-            )
-            single_port["default_file"] = out_ordered_default_file
+            single_port["default_file"] = model_output.default_file
+            single_port["datatype"] = model_output.datatype
             output_ls.append(single_port)
 
         if len(input_ls) != 0:

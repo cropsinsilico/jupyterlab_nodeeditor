@@ -11,8 +11,10 @@ model:
       default_file:
         name: ./Input/canopy_structure.txt
         filetype: table
+        as_array: True
   outputs:
     - name: light_intensity
       default_file:
         name: ./Output/light_intensity.txt
         filetype: table
+        field_names: light_intensity

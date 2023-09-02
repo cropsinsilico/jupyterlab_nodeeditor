@@ -27,6 +27,7 @@ class InputSlot(ipywidgets.Widget):
     title = traitlets.Unicode().tag(sync=True)
     multi_connection = traitlets.Bool().tag(sync=True)
     default_file = traitlets.Dict().tag(sync=True)
+    datatype = traitlets.Dict().tag(sync=True)
     language = traitlets.Unicode().tag(sync=True)
     socket_type = traitlets.Unicode().tag(sync=True)
     sockets = traitlets.Instance(SocketCollection).tag(
@@ -69,6 +70,7 @@ class OutputSlot(ipywidgets.Widget):
     title = traitlets.Unicode().tag(sync=True)
     multi_connection = traitlets.Bool().tag(sync=True)
     default_file = traitlets.Dict().tag(sync=True)
+    datatype = traitlets.Dict().tag(sync=True)
     language = traitlets.Unicode().tag(sync=True)
     socket_type = traitlets.Unicode().tag(sync=True)
     sockets = traitlets.Instance(SocketCollection).tag(

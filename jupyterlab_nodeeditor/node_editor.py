@@ -217,9 +217,12 @@ class NodeInstanceModel(ipywidgets.Widget):
                 output_grid[i + 1, 0], output_grid[i + 1, 1] = slot.widget()
             box.children = box.children[:2] + (output_grid,) + box.children[3:]
 
-        def _update_threejs(event):
-            threejs_grid = ipywidgets.GridspecLayout(len(self.controls) + 1, 2)
+        def _update_threejs(event=None):
             file_add = self.controls[0].value
+            file_extension = file_add.split(".")[1]
+            if file_extension != "ply":
+                return  # Exit the function if the extension is not .ply
+            threejs_grid = ipywidgets.GridspecLayout(len(self.controls) + 1, 2)
             rendererCube = _threejs_vis(file_add)
             button = ipywidgets.Button(description="Show ThreeJS")
             threejs_grid[0, :] = ipywidgets.HBox([button])
@@ -252,15 +255,15 @@ class NodeInstanceModel(ipywidgets.Widget):
                     indices[i, :] = f.readline().split()[-3:]
             vertexcolors /= 255.0
             plantgeometry = pythreejs.BufferGeometry(
-                attributes=dict(
-                    position=pythreejs.BufferAttribute(
+                attributes={
+                    "position": pythreejs.BufferAttribute(
                         vertices, normalized=False
                     ),
-                    index=pythreejs.BufferAttribute(
+                    "index": pythreejs.BufferAttribute(
                         indices.ravel(order="C"), normalized=False
                     ),
-                    color=pythreejs.BufferAttribute(vertexcolors),
-                )
+                    "color": pythreejs.BufferAttribute(vertexcolors),
+                }
             )
             plantgeometry.exec_three_obj_method("computeFaceNormals")
             mat = pythreejs.MeshStandardMaterial(
@@ -304,6 +307,9 @@ class NodeInstanceModel(ipywidgets.Widget):
         self.observe(_update_inputs, ["inputs"])
         self.observe(_update_outputs, ["outputs"])
         self.observe(_update_threejs, ["controls"])
+        # _update_inputs()
+        # _update_outputs()
+        # _update_threejs()
         return box
 
 

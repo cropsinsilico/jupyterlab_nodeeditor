@@ -7,12 +7,12 @@
     "importsNotUsedAsValues": "remove",
     "incremental": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react",
     "module": "esnext",
     "moduleResolution": "node",
     "noEmitOnError": true,
     "noImplicitAny": true,
-    "noUnusedLocals": false,
+    "noUnusedLocals": true,
     "preserveWatchOutput": true,
     "resolveJsonModule": true,
     "outDir": "lib",
@@ -23,19 +23,18 @@
     ],
     "strict": true,
     "strictNullChecks": false,
-    "target": "es2017",
+    "target": "ES2018",
     "types": [
       "node",
       "rete-react-render-plugin",
       "rete-vue-render-plugin",
       "rete-context-menu-plugin",
-      "resize-observer-browser"
+      "resize-observer-browser",
+      "rete-auto-arrange-plugin"
     ],
     "skipLibCheck": true
   },
-  "include": [
-    "src/*"
-  ],
+  "include": ["src/*"],
   "exclude": [
     "./src/localtypes"
   ]

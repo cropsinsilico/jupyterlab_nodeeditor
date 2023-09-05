@@ -31,6 +31,9 @@ class InputSlot(ipywidgets.Widget):
     key = traitlets.Unicode().tag(sync=True)
     title = traitlets.Unicode().tag(sync=True)
     multi_connection = traitlets.Bool().tag(sync=True)
+    default_file = traitlets.Dict().tag(sync=True)
+    datatype = traitlets.Dict().tag(sync=True)
+    language = traitlets.Unicode().tag(sync=True)
     socket_type = traitlets.Unicode().tag(sync=True)
     sockets = traitlets.Instance(SocketCollection).tag(
         sync=True, **ipywidgets.widget_serialization
@@ -71,6 +74,9 @@ class OutputSlot(ipywidgets.Widget):
     key = traitlets.Unicode().tag(sync=True)
     title = traitlets.Unicode().tag(sync=True)
     multi_connection = traitlets.Bool().tag(sync=True)
+    default_file = traitlets.Dict().tag(sync=True)
+    datatype = traitlets.Dict().tag(sync=True)
+    language = traitlets.Unicode().tag(sync=True)
     socket_type = traitlets.Unicode().tag(sync=True)
     sockets = traitlets.Instance(SocketCollection).tag(
         sync=True, **ipywidgets.widget_serialization
@@ -174,7 +180,9 @@ class NodeInstanceModel(ipywidgets.Widget):
     title = traitlets.Unicode("Title").tag(sync=True)
     # We distinguish between name and title because one is displayed on all
     # instances and the other is the name of the component type
-    type_name = traitlets.Unicode("DefaultComponent", allow_none=False).tag(sync=True)
+    type_name = traitlets.Unicode("DefaultComponent", allow_none=False).tag(
+        sync=True
+    )
     inputs = traitlets.List(InputSlotTrait()).tag(
         sync=True, **ipywidgets.widget_serialization
     )
@@ -195,14 +203,14 @@ class NodeInstanceModel(ipywidgets.Widget):
         threejs_grid = ipywidgets.GridspecLayout(len(self.controls) + 1, 2)
         box = ipywidgets.VBox([title, input_grid, output_grid, threejs_grid])
 
-        def _update_inputs(event):
+        def _update_inputs(event=None):
             input_grid = ipywidgets.GridspecLayout(len(self.inputs) + 1, 2)
             input_grid[0, :] = ipywidgets.Label("Inputs")
             for i, slot in enumerate(self.inputs):
                 input_grid[i + 1, 0], input_grid[i + 1, 1] = slot.widget()
             box.children = box.children[:1] + (input_grid,) + box.children[2:]
 
-        def _update_outputs(event):
+        def _update_outputs(event=None):
             output_grid = ipywidgets.GridspecLayout(len(self.outputs) + 1, 2)
             output_grid[0, :] = ipywidgets.Label("Outputs")
             for i, slot in enumerate(self.outputs):
@@ -232,7 +240,9 @@ class NodeInstanceModel(ipywidgets.Widget):
                     pass
                 vertices = np.zeros((7068, 3), dtype="f4")  # need to revise
                 indices = np.zeros((8584, 3), dtype="u4")  # need to revise
-                vertexcolors = np.zeros((vertices.shape[0], 3), dtype="float32")
+                vertexcolors = np.zeros(
+                    (vertices.shape[0], 3), dtype="float32"
+                )
 
                 for i in range(7068):
                     v = f.readline().split()
@@ -243,7 +253,9 @@ class NodeInstanceModel(ipywidgets.Widget):
             vertexcolors /= 255.0
             plantgeometry = pythreejs.BufferGeometry(
                 attributes=dict(
-                    position=pythreejs.BufferAttribute(vertices, normalized=False),
+                    position=pythreejs.BufferAttribute(
+                        vertices, normalized=False
+                    ),
                     index=pythreejs.BufferAttribute(
                         indices.ravel(order="C"), normalized=False
                     ),
@@ -264,12 +276,18 @@ class NodeInstanceModel(ipywidgets.Widget):
                 fov=20,
                 children=[
                     pythreejs.DirectionalLight(
-                        color="#ffffff", position=[100, 100, 100], intensity=0.5
+                        color="#ffffff",
+                        position=[100, 100, 100],
+                        intensity=0.5,
                     )
                 ],
             )
             sceneCube = pythreejs.Scene(
-                children=[myobjectCube, cCube, pythreejs.AmbientLight(color="#dddddd")]
+                children=[
+                    myobjectCube,
+                    cCube,
+                    pythreejs.AmbientLight(color="#dddddd"),
+                ]
             )
 
             rendererCube = pythreejs.Renderer(
@@ -301,9 +319,9 @@ class ConnectionModel(ipywidgets.Widget):
         sync=True, **ipywidgets.widget_serialization
     )
     source_key = traitlets.Unicode(allow_none=True).tag(sync=True)
-    destination_node = traitlets.Instance(NodeInstanceModel, allow_none=True).tag(
-        sync=True, **ipywidgets.widget_serialization
-    )
+    destination_node = traitlets.Instance(
+        NodeInstanceModel, allow_none=True
+    ).tag(sync=True, **ipywidgets.widget_serialization)
     destination_key = traitlets.Unicode(allow_none=True).tag(sync=True)
 
 
@@ -322,9 +340,9 @@ class NodeEditorModel(ipywidgets.DOMWidget):
     selected_node = traitlets.Instance(NodeInstanceModel, allow_none=True).tag(
         sync=True, **ipywidgets.widget_serialization
     )
-    nodes = traitlets.List(traitlets.Instance(NodeInstanceModel), default_value=[]).tag(
-        sync=True, **ipywidgets.widget_serialization
-    )
+    nodes = traitlets.List(
+        traitlets.Instance(NodeInstanceModel), default_value=[]
+    ).tag(sync=True, **ipywidgets.widget_serialization)
     connections = traitlets.List(
         traitlets.Instance(ConnectionModel), default_value=[]
     ).tag(sync=True, **ipywidgets.widget_serialization)
@@ -355,7 +373,9 @@ class NodeEditor(traitlets.HasTraits):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        traitlets.link((self, "socket_types"), (self.socket_collection, "socket_types"))
+        traitlets.link(
+            (self, "socket_types"), (self.socket_collection, "socket_types")
+        )
 
     @traitlets.default("node_editor")
     def _default_node_editor(self):
@@ -369,12 +389,16 @@ class NodeEditor(traitlets.HasTraits):
         accordion = ipywidgets.Accordion()
 
         def update_nodes(change):
-            accordion.children = [node.display_element for node in change["new"]]
+            accordion.children = [
+                node.display_element for node in change["new"]
+            ]
             for i, node in enumerate(change["new"]):
                 accordion.set_title(i, f"Node {i+1} - {node.title}")
 
         def update_selected(change):
-            accordion.selected_index = self.node_editor.nodes.index(change["new"])
+            accordion.selected_index = self.node_editor.nodes.index(
+                change["new"]
+            )
 
         update_nodes({"new": self.node_editor.nodes})
         self.node_editor.observe(update_nodes, ["nodes"])

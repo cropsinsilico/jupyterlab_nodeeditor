@@ -1,0 +1,147 @@
+models:
+  - name: GrowthModel
+    language: python
+    args: ./src/growth.py
+    inputs:
+      - name: GrowthModel:photosynthesis_rate
+        default_file:
+          filetype: table
+          name: ./Input/photosynthesis_rate.txt
+        datatype:
+          subtype: string
+          type: scalar
+    outputs:
+      - name: GrowthModel:growth_rate
+        default_file:
+          filetype: table
+          name: ./Output/growth_rate.txt
+        datatype:
+          subtype: string
+          type: scalar
+  - name: CanopyModel
+    language: c++
+    args: ./src/canopy.cpp
+    inputs:
+      - name: CanopyModel:plant_layout
+        default_file:
+          filetype: table
+          name: ./Input/plant_layout.txt
+        datatype:
+          subtype: string
+          type: scalar
+      - name: CanopyModel:init_canopy_structure
+        default_file:
+          as_array: true
+          filetype: table
+          name: ./Input/canopy_structure.txt
+        datatype:
+          subtype: string
+          type: scalar
+      - name: CanopyModel:growth_rate
+        default_file:
+          filetype: table
+          name: ./Input/growth_rate.txt
+        datatype:
+          subtype: string
+          type: scalar
+      - name: CanopyModel:time
+        default_file:
+          filetype: table
+          name: ./Input/time.txt
+        datatype:
+          subtype: string
+          type: scalar
+    outputs:
+      - name: CanopyModel:canopy_structure
+        default_file:
+          as_array: true
+          field_names:
+            - x1,y1,z1,x2,y2,z2,x3,y3,z3
+          filetype: table
+          name: ./Output/canopy_structure.txt
+        datatype:
+          subtype: string
+          type: scalar
+  - name: LightModel
+    language: c
+    args: ./src/light.c
+    inputs:
+      - name: LightModel:ambient_light
+        default_file:
+          filetype: table
+          name: ./Input/ambient_light.txt
+        datatype:
+          subtype: string
+          type: scalar
+      - name: LightModel:canopy_structure
+        default_file:
+          as_array: true
+          filetype: table
+          name: ./Input/canopy_structure.txt
+        datatype:
+          subtype: string
+          type: scalar
+    outputs:
+      - name: LightModel:light_intensity
+        default_file:
+          field_names:
+            - light_intensity
+          filetype: table
+          name: ./Output/light_intensity.txt
+        datatype:
+          subtype: string
+          type: scalar
+  - name: PhotosynthesisModel
+    language: python
+    args: ./src/photosynthesis.py
+    inputs:
+      - name: PhotosynthesisModel:light_intensity
+        default_file:
+          filetype: table
+          name: ./Input/light_intensity.txt
+        datatype:
+          allowSingular: true
+          items:
+            type: number
+          type: array
+      - name: PhotosynthesisModel:temperature
+        default_file:
+          filetype: table
+          name: ./Input/temperature.txt
+        datatype:
+          allowSingular: true
+          items:
+            type: number
+          type: array
+      - name: PhotosynthesisModel:co2
+        default_file:
+          filetype: table
+          name: ./Input/co2.txt
+        datatype:
+          subtype: string
+          type: scalar
+    outputs:
+      - name: PhotosynthesisModel:photosynthesis_rate
+        default_file:
+          field_names:
+            - photosynthesis_rate
+          filetype: table
+          name: ./Output/photosynthesis_rate.txt
+        datatype:
+          allowSingular: true
+          items:
+            type: number
+          type: array
+connections:
+  - inputs: GrowthModel:growth_rate
+    outputs:
+      - CanopyModel:growth_rate
+  - inputs: CanopyModel:canopy_structure
+    outputs:
+      - LightModel:canopy_structure
+  - inputs: LightModel:light_intensity
+    outputs:
+      - PhotosynthesisModel:light_intensity
+  - inputs: PhotosynthesisModel:photosynthesis_rate
+    outputs:
+      - GrowthModel:photosynthesis_rate

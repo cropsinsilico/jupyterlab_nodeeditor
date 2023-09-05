@@ -9,7 +9,7 @@ import {
   NumberInputControl,
   DropDownInputControl,
   TextInputControl
-} from 'nodeeditor-controls';
+} from '@data-exp-lab/nodeeditor-controls';
 import { ReteEditorModel } from './widget';
 type DropDownOption = {
   text: string;
@@ -24,7 +24,11 @@ interface IVueNumControlProps {
   retePutData?: (ikey: string, value: number) => void;
 }
 
-class NumControl extends Rete.Control {
+export interface IVueControlWidget extends Rete.Control {
+  setValue(val: any): void;
+}
+
+class NumControl extends Rete.Control implements IVueControlWidget {
   constructor(
     emitter: Rete.Emitter<EventsTypes>,
     key: string,
@@ -44,13 +48,15 @@ class NumControl extends Rete.Control {
 
     (this.data as any).render = 'vue';
   }
-  setValue(val: number) {
-    this.vueContext.value = val;
+  setValue(val: any) {
+    this.vueContext.currentValue = val;
   }
 
   putData(key: string, data: unknown): void {
+    console.log('Putting', key, data);
     super.putData(key, data);
     if (key === this.props.ikey) {
+      console.log('Setting value', data);
       this.control.set('value', data);
       this.control.save_changes();
     }
@@ -71,7 +77,7 @@ interface IVueTextControlProps {
   retePutData?: (ikey: string, value: number) => void;
 }
 
-class TextControl extends Rete.Control {
+class TextControl extends Rete.Control implements IVueControlWidget {
   constructor(
     emitter: Rete.Emitter<EventsTypes>,
     key: string,
@@ -91,7 +97,7 @@ class TextControl extends Rete.Control {
     (this.data as any).render = 'vue';
   }
 
-  setValue(val: number) {
+  setValue(val: any) {
     this.vueContext.value = val;
   }
 
@@ -116,7 +122,7 @@ interface IVueDropDownControlProps {
   retePutData?: (ikey: string, value: number) => void;
 }
 
-class DropDownControl extends Rete.Control {
+class DropDownControl extends Rete.Control implements IVueControlWidget {
   constructor(
     emitter: Rete.Emitter<EventsTypes>,
     key: string,
@@ -136,7 +142,7 @@ class DropDownControl extends Rete.Control {
     (this.data as any).render = 'vue';
   }
 
-  setValue(val: number) {
+  setValue(val: any) {
     this.vueContext.value = val;
   }
 

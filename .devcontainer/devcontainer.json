@@ -1,10 +1,11 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
 	"name": "JLNE_ENV",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/anaconda:0.203.3-3",
-
-	"postCreateCommand": "bash ./.devcontainer/postCreateCommand.sh"
-
+	"image": "mcr.microsoft.com/devcontainers/python:3.10",
+	"postCreateCommand": "bash ./.devcontainer/postCreateCommand.sh",
+	"features": {
+		"ghcr.io/devcontainers/features/node:1": {
+		"version": "latest"
+		}
+	}
 }

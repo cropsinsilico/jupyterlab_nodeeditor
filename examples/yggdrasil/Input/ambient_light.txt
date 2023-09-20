@@ -1,3 +1,0 @@
-# ambient_light
-# %lf
-5.0

@@ -198,7 +198,7 @@ export class ReteOutputModel extends ReteIOModel {
         this.key,
         this.title,
         this.sockets.getSocket(this.socket_type),
-        this.multi_connection
+        this.multi_connection,
       );
     }
     return this._instance;
@@ -463,7 +463,7 @@ export class ReteEditorModel extends DOMWidgetModel {
     }
   }
 
-  private async onCommand(command: any, buffers: any) {
+  async onCommand(command: any, buffers: any) {
     let newConfig: Data;
     const myConfig: { [key: string]: any } = {};
     switch (command.name) {
@@ -481,6 +481,7 @@ export class ReteEditorModel extends DOMWidgetModel {
           myConfig[viewId] = (view as ReteEditorView).editor.toJSON() as any;
         }
         this.editorConfig = myConfig;
+        // console.log(myConfig);
         this.set('editorConfig', this.editorConfig);
         this.save();
         break;
@@ -663,7 +664,8 @@ export class ReteEditorView extends DOMWidgetView {
   }
 
   async updateConfig(): Promise<void> {
-    this.model.editorConfig = this.editor.toJSON();
+    // this.model.onCommand( {'command': 'getConfig' },[] );
+    this.model.editorConfig = await this.editor.toJSON();
     // console.log('Updating config', this.model.editorConfig);
     this.model.set('editorConfig', this.model.editorConfig);
     this.model.save();
@@ -753,7 +755,7 @@ export class ReteEditorView extends DOMWidgetView {
     })) as ReteConnectionModel;
     newConnection._connection = connection;
     (connection.data as { [key: string]: unknown }) = {
-      connectionModel: newConnection
+      connectionModel: newConnection.model_id
     };
     // console.log('Created_Connection ', connection); //this will not return value
     // console.log('Create_Connection_Input ', connection.input);

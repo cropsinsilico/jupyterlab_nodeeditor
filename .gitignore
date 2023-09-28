@@ -125,4 +125,3 @@ dmypy.json
 examples/yggdrasil/Input/
 examples/yggdrasil/Output/
 examples/yggdrasil/src/
-examples/yggdrasil/yamls/

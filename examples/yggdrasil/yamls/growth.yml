@@ -1,0 +1,14 @@
+model:
+  name: GrowthModel
+  language: python
+  args: ./src/growth.py
+  inputs:
+    - name: photosynthesis_rate
+      default_file:
+        name: ./Input/photosynthesis_rate.txt
+        filetype: table
+  outputs:
+    - name: growth_rate
+      default_file:
+        name: ./Output/growth_rate.txt
+        filetype: table

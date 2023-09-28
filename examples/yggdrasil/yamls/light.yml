@@ -1,0 +1,20 @@
+model:
+  name: LightModel
+  language: c
+  args: ./src/light.c
+  inputs:
+    - name: ambient_light
+      default_file:
+        name: ./Input/ambient_light.txt
+        filetype: table
+    - name: canopy_structure
+      default_file:
+        name: ./Input/canopy_structure.txt
+        filetype: table
+        as_array: True
+  outputs:
+    - name: light_intensity
+      default_file:
+        name: ./Output/light_intensity.txt
+        filetype: table
+        field_names: light_intensity

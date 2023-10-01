@@ -17,7 +17,7 @@ connections:
     output: python_modelB:input
     callback:
       function: ./src/callback.py:callback_function
-      interval: 2
+      interval: 1
   - input: python_modelB:output  # Connection between model B, function 1 output and file
     output: ./output/outputB.txt
     filetype: table

@@ -15,16 +15,9 @@ y = [np.random.randn()]
 out = widgets.Output()
 display(out)
 
-def update_plot(x,y):
-    with out:
-        clear_output(wait=True)
-        plt.plot(x, y)
-        plt.show()
-    global timer
-    timer = threading.Timer(1.0, update_plot)
-    timer.start()
-
 def callback_function(msg):
     x.append(x[-1] + 1)
     y.append(units.get_data(msg.args))
-    update_plot(x,y)
+    clear_output(wait=True)
+    plt.plot(x, y)
+    plt.show()
